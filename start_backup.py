@@ -271,5 +271,5 @@ while cap.isOpened():
         break
 
 cv2.destroyAllWindows()
-out_video.release()
+# out_video.release()
 cap.release()
