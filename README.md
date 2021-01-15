@@ -22,4 +22,4 @@ Pose_Estimation
 
 cd src/Anti-Candid_Pose_Estimation_And_Object_Detection/trt_pose/tasks/human_pose/
 
-python3 detect_camera.py
+python3 start.py
