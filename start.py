@@ -259,7 +259,7 @@ while cap.isOpened():
     pilimg = PIL.Image.fromarray(pilimg)
     pilimg = execute_2(img, pilimg, count) 
     array = np.asarray(pilimg, dtype="uint8")
-#     out_video.write(array)
+    # out_video.write(array)
     count += 1
     
     # 顯示影像

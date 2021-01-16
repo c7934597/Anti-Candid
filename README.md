@@ -5,7 +5,7 @@ Anti-Candid_Pose
 source /home/minggatsby/python/bin/activate
 
 2.
-cd src/Anti-Candid_Pose_Estimation_And_Object_Detection/
+cd src/Anti-Candid/
 
 
 
@@ -20,6 +20,6 @@ python3 trt_yolo.py -m yolov4-416 --usb 0 --gstreamer false
 
 Pose_Estimation
 
-cd src/Anti-Candid_Pose_Estimation_And_Object_Detection/trt_pose/tasks/human_pose/
+cd src/Anti-Candid/trt_pose/tasks/human_pose/
 
 python3 start.py
