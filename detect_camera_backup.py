@@ -15,6 +15,58 @@ from trt_pose.parse_objects import ParseObjects
 import argparse
 import os.path
 
+"""Parse input arguments."""
+parser = argparse.ArgumentParser(description='TensorRT pose estimation run')
+parser.add_argument('--model', type=str, default='resnet', help = 'resnet or densenet' )
+parser.add_argument('--video', type=str, default='/home/minggatsby/src/test_images/video.avi', help = 'video file name' )
+args = parser.parse_args()
+
+with open('./trt_pose/tasks/human_pose/human_pose.json', 'r') as f:
+    human_pose = json.load(f)
+
+topology = trt_pose.coco.coco_category_to_topology(human_pose)
+
+num_parts = len(human_pose['keypoints'])
+num_links = len(human_pose['skeleton'])
+
+if 'resnet' in args.model:
+    print('------ model = resnet--------')
+    MODEL_WEIGHTS = './trt_pose/tasks/human_pose/resnet18_baseline_att_224x224_A_epoch_249.pth'
+    OPTIMIZED_MODEL = './trt_pose/tasks/human_pose/resnet18_baseline_att_224x224_A_epoch_249_trt.pth'
+    model = trt_pose.models.resnet18_baseline_att(num_parts, 2 * num_links).cuda().eval()
+    WIDTH = 224
+    HEIGHT = 224
+
+else:    
+    print('------ model = densenet--------')
+    MODEL_WEIGHTS = './trt_pose/tasks/human_pose/densenet121_baseline_att_256x256_B_epoch_160.pth'
+    OPTIMIZED_MODEL = './trt_pose/tasks/human_pose/densenet121_baseline_att_256x256_B_epoch_160_trt.pth'
+    model = trt_pose.models.densenet121_baseline_att(num_parts, 2 * num_links).cuda().eval()
+    WIDTH = 256
+    HEIGHT = 256
+
+data = torch.zeros((1, 3, HEIGHT, WIDTH)).cuda()
+if os.path.exists(OPTIMIZED_MODEL) == False:
+    print('-- Converting TensorRT models. This may takes several minutes...')
+    model.load_state_dict(torch.load(MODEL_WEIGHTS))
+    model_trt = torch2trt.torch2trt(model, [data], fp16_mode=True, max_workspace_size=1<<25)
+    torch.save(model_trt.state_dict(), OPTIMIZED_MODEL)
+
+model_trt = TRTModule()
+model_trt.load_state_dict(torch.load(OPTIMIZED_MODEL))
+
+t0 = time.time()
+torch.cuda.current_stream().synchronize()
+for i in range(50):
+    y = model_trt(data)
+torch.cuda.current_stream().synchronize()
+t1 = time.time()
+
+print(50.0 / (t1 - t0))
+
+mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
+std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
+device = torch.device('cuda')
 
 def draw_keypoints(img, key):
     thickness = 5
@@ -103,60 +155,6 @@ def get_keypoint(humans, hnum, peaks):
             #print('index:%d : None %d'%(j, k) )
     return kpoint
 
-
-parser = argparse.ArgumentParser(description='TensorRT pose estimation run')
-parser.add_argument('--model', type=str, default='resnet', help = 'resnet or densenet' )
-parser.add_argument('--video', type=str, default='/home/minggatsby/src/test_images/video.avi', help = 'video file name' )
-args = parser.parse_args()
-
-with open('./trt_pose/tasks/human_pose/human_pose.json', 'r') as f:
-    human_pose = json.load(f)
-
-topology = trt_pose.coco.coco_category_to_topology(human_pose)
-
-num_parts = len(human_pose['keypoints'])
-num_links = len(human_pose['skeleton'])
-
-
-if 'resnet' in args.model:
-    print('------ model = resnet--------')
-    MODEL_WEIGHTS = './trt_pose/tasks/human_pose/resnet18_baseline_att_224x224_A_epoch_249.pth'
-    OPTIMIZED_MODEL = './trt_pose/tasks/human_pose/resnet18_baseline_att_224x224_A_epoch_249_trt.pth'
-    model = trt_pose.models.resnet18_baseline_att(num_parts, 2 * num_links).cuda().eval()
-    WIDTH = 224
-    HEIGHT = 224
-
-else:    
-    print('------ model = densenet--------')
-    MODEL_WEIGHTS = './trt_pose/tasks/human_pose/densenet121_baseline_att_256x256_B_epoch_160.pth'
-    OPTIMIZED_MODEL = './trt_pose/tasks/human_pose/densenet121_baseline_att_256x256_B_epoch_160_trt.pth'
-    model = trt_pose.models.densenet121_baseline_att(num_parts, 2 * num_links).cuda().eval()
-    WIDTH = 256
-    HEIGHT = 256
-
-data = torch.zeros((1, 3, HEIGHT, WIDTH)).cuda()
-if os.path.exists(OPTIMIZED_MODEL) == False:
-    print('-- Converting TensorRT models. This may takes several minutes...')
-    model.load_state_dict(torch.load(MODEL_WEIGHTS))
-    model_trt = torch2trt.torch2trt(model, [data], fp16_mode=True, max_workspace_size=1<<25)
-    torch.save(model_trt.state_dict(), OPTIMIZED_MODEL)
-
-model_trt = TRTModule()
-model_trt.load_state_dict(torch.load(OPTIMIZED_MODEL))
-
-t0 = time.time()
-torch.cuda.current_stream().synchronize()
-for i in range(50):
-    y = model_trt(data)
-torch.cuda.current_stream().synchronize()
-t1 = time.time()
-
-print(50.0 / (t1 - t0))
-
-mean = torch.Tensor([0.485, 0.456, 0.406]).cuda()
-std = torch.Tensor([0.229, 0.224, 0.225]).cuda()
-device = torch.device('cuda')
-
 def preprocess(image):
     global device
     device = torch.device('cuda')
@@ -165,34 +163,11 @@ def preprocess(image):
     image = transforms.functional.to_tensor(image).to(device)
     image.sub_(mean[:, None, None]).div_(std[:, None, None])
     return image[None, ...]
-
-def execute(img, src, t):
-    color = (0, 255, 0)
-    data = preprocess(img)
-    cmap, paf = model_trt(data)
-    cmap, paf = cmap.detach().cpu(), paf.detach().cpu()
-    counts, objects, peaks = parse_objects(cmap, paf)#, cmap_threshold=0.15, link_threshold=0.15)
-    fps = 1.0 / (time.time() - t)
-    for i in range(counts[0]):
-        keypoints = get_keypoint(objects, i, peaks)
-        for j in range(len(keypoints)):
-            if keypoints[j][1]:
-                x = round(keypoints[j][2] * WIDTH * X_compress)
-                y = round(keypoints[j][1] * HEIGHT * Y_compress)
-                cv2.circle(src, (x, y), 3, color, 2)
-                cv2.putText(src , "%d" % int(keypoints[j][0]), (x + 5, y),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 1)
-                cv2.circle(src, (x, y), 3, color, 2)
-    print("FPS:%f "%(fps))
-    #draw_objects(img, counts, objects, peaks)
-
-    cv2.putText(src , "FPS: %f" % (fps), (20, 20),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1)
-    out_video.write(src)
-
-
+    
 '''
 Draw to original image
 '''
-def execute_2(img, org, count):
+def execute(img, org, count):
     start = time.time()
     data = preprocess(img)
     cmap, paf = model_trt(data)
@@ -220,23 +195,21 @@ _HEIGHT=480
 _FLIP_METHOD=0
 
 # 選擇相機 MIPI / USB
-#camSet = 'nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12 ! nvvidconv flip-method='+str(_FLIP_METHOD)+' ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
-camSet = 'v4l2src device=/dev/video0 ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', framerate=24/1 ! videoconvert ! appsink'
-cap = cv2.VideoCapture(camSet)
-# cap = cv2.VideoCapture(0)
+# camSet = 'nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12 ! nvvidconv flip-method='+str(_FLIP_METHOD)+' ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
+# camSet = 'v4l2src device=/dev/video0 ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', framerate=24/1 ! videoconvert ! appsink'
 
+# cap = cv2.VideoCapture(camSet)
+cap = cv2.VideoCapture(0)
 # cap = cv2.VideoCapture(args.video)
+
 ret_val, img = cap.read()
-H, W, __ = img.shape
+# H, W, __ = img.shape
 
-fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-dir, filename = os.path.split(args.video)
-name, ext = os.path.splitext(filename)
-out_video = cv2.VideoWriter('/home/minggatsby/src/test_images/result/%s_%s.mp4'%(args.model, name), fourcc, cap.get(cv2.CAP_PROP_FPS), (W, H))
-count = 0
-
-X_compress = 640.0 / WIDTH * 1.0
-Y_compress = 480.0 / HEIGHT * 1.0
+# fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+# dir, filename = os.path.split(args.video)
+# name, ext = os.path.splitext(filename)
+# out_video = cv2.VideoWriter('/home/minggatsby/src/test_images/result/%s_%s.mp4'%(args.model, name), fourcc, cap.get(cv2.CAP_PROP_FPS), (W, H))
+# count = 0
 
 if cap is None:
     print("Camera Open Error")
@@ -255,17 +228,18 @@ while cap.isOpened():
         print("Frame Read End")
         break       
     img = cv2.resize(dst, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
-    pilimg = cv2.cvtColor(dst, cv2.COLOR_BGR2RGB)
-    pilimg = PIL.Image.fromarray(pilimg)
-    pilimg = execute_2(img, pilimg, count) 
+#     pilimg = cv2.cvtColor(dst, cv2.COLOR_BGR2RGB)
+#     pilimg = PIL.Image.fromarray(pilimg)
+    pilimg = PIL.Image.fromarray(dst)
+    pilimg = execute(img, pilimg, count)
     array = np.asarray(pilimg, dtype="uint8")
-    out_video.write(array)
+    # out_video.write(array)
     count += 1
-    
+
     # 顯示影像
 #     cv2.imshow('myCam', dst) # 顯示原始影像
     cv2.imshow('myCam', array) # 顯示姿態估計影像
-    
+
     # 若按下 q 鍵則離開迴圈
     if cv2.waitKey(1) == ord('q'):
         break

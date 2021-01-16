@@ -163,129 +163,75 @@ def preprocess(image):
     image = transforms.functional.to_tensor(image).to(device)
     image.sub_(mean[:, None, None]).div_(std[:, None, None])
     return image[None, ...]
-
-def execute(change):
-    image = change['new']
-    data = preprocess(image)
+    
+'''
+Draw to original image
+'''
+def execute(img, org, count):
+    start = time.time()
+    data = preprocess(img)
     cmap, paf = model_trt(data)
     cmap, paf = cmap.detach().cpu(), paf.detach().cpu()
+    end = time.time()
     counts, objects, peaks = parse_objects(cmap, paf)#, cmap_threshold=0.15, link_threshold=0.15)
-    draw_objects(image, counts, objects, peaks)
-    image_w.value = bgr8_to_jpeg(image[:, ::-1, :])
-    
-# '''
-# Draw to original image
-# '''
-# def execute(img, org, count):
-#     start = time.time()
-#     data = preprocess(img)
-#     cmap, paf = model_trt(data)
-#     cmap, paf = cmap.detach().cpu(), paf.detach().cpu()
-#     end = time.time()
-#     counts, objects, peaks = parse_objects(cmap, paf)#, cmap_threshold=0.15, link_threshold=0.15)
-#     for i in range(counts[0]):
-#         #print("Human index:%d "%( i ))
-#         kpoint = get_keypoint(objects, i, peaks)
-#         #print(kpoint)
-#         org = draw_keypoints(org, kpoint)
-#     netfps = 1 / (end - start)  
-#     draw = PIL.ImageDraw.Draw(org)
-#     draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))    
-#     print("Human count:%d len:%d "%(counts[0], len(counts)))
-#     print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
-#     return org
+    for i in range(counts[0]):
+        #print("Human index:%d "%( i ))
+        kpoint = get_keypoint(objects, i, peaks)
+        #print(kpoint)
+        org = draw_keypoints(org, kpoint)
+    netfps = 1 / (end - start)  
+    draw = PIL.ImageDraw.Draw(org)
+    draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))    
+    print("Human count:%d len:%d "%(counts[0], len(counts)))
+    print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
+    return org
 
+'''
+v4l2-ctl --list-formats-ext指令查詢規範
+sudo systemctl restart nvargus-daemon指令重啟相機服務
+'''
+_WIDTH=640
+_HEIGHT=480
+_FLIP_METHOD=0
 
+# 選擇相機 MIPI / USB
+# camSet = 'nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12 ! nvvidconv flip-method='+str(_FLIP_METHOD)+' ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
+# camSet = 'v4l2src device=/dev/video0 ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', framerate=24/1 ! videoconvert ! appsink'
 
+# cap = cv2.VideoCapture(camSet)
+cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(args.video)
 
+ret_val, img = cap.read()
 
-from jetcam.usb_camera import USBCamera
-# from jetcam.csi_camera import CSICamera
-from jetcam.utils import bgr8_to_jpeg
+if cap is None:
+    print("Camera Open Error")
+    sys.exit(0)
 
-camera = USBCamera(width=WIDTH, height=HEIGHT, capture_fps=30)
-# camera = CSICamera(width=WIDTH, height=HEIGHT, capture_fps=30)
+parse_objects = ParseObjects(topology)
+draw_objects = DrawObjects(topology)
 
-camera.running = True
+fontname = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
+fnt = PIL.ImageFont.truetype(fontname, 45)
 
-import ipywidgets
-from IPython.display import display
+count = 1
+while cap.isOpened():
+    ret_val, dst = cap.read()
+    if ret_val == False:
+        print("Frame Read End")
+        break       
+    img = cv2.resize(dst, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
+    pilimg = PIL.Image.fromarray(dst)
+    pilimg = execute(img, pilimg, count)
+    array = np.asarray(pilimg, dtype="uint8")
+    count += 1
 
-image_w = ipywidgets.Image(format='jpeg')
+    # 顯示影像
+    cv2.imshow('myCam', array) # 顯示姿態估計影像
 
-display(image_w)
+    # 若按下 q 鍵則離開迴圈
+    if cv2.waitKey(1) == ord('q'):
+        break
 
-execute({'new': camera.value})
-
-camera.unobserve_all()
-
-
-
-
-
-
-
-
-
-
-# '''
-# v4l2-ctl --list-formats-ext指令查詢規範
-# sudo systemctl restart nvargus-daemon指令重啟相機服務
-# '''
-# _WIDTH=640
-# _HEIGHT=480
-# _FLIP_METHOD=0
-
-# # 選擇相機 MIPI / USB
-# # camSet = 'nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12 ! nvvidconv flip-method='+str(_FLIP_METHOD)+' ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
-# # camSet = 'v4l2src device=/dev/video0 ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', framerate=24/1 ! videoconvert ! appsink'
-
-# # cap = cv2.VideoCapture(camSet)
-# cap = cv2.VideoCapture(0)
-# # cap = cv2.VideoCapture(args.video)
-
-# ret_val, img = cap.read()
-# # H, W, __ = img.shape
-
-# # fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-# # dir, filename = os.path.split(args.video)
-# # name, ext = os.path.splitext(filename)
-# # out_video = cv2.VideoWriter('/home/minggatsby/src/test_images/result/%s_%s.mp4'%(args.model, name), fourcc, cap.get(cv2.CAP_PROP_FPS), (W, H))
-# # count = 0
-
-# if cap is None:
-#     print("Camera Open Error")
-#     sys.exit(0)
-
-# parse_objects = ParseObjects(topology)
-# draw_objects = DrawObjects(topology)
-
-# fontname = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
-# fnt = PIL.ImageFont.truetype(fontname, 45)
-
-# count = 1
-# while cap.isOpened():
-#     ret_val, dst = cap.read()
-#     if ret_val == False:
-#         print("Frame Read End")
-#         break       
-#     img = cv2.resize(dst, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
-# #     pilimg = cv2.cvtColor(dst, cv2.COLOR_BGR2RGB)
-# #     pilimg = PIL.Image.fromarray(pilimg)
-#     pilimg = PIL.Image.fromarray(dst)
-#     pilimg = execute(img, pilimg, count)
-#     array = np.asarray(pilimg, dtype="uint8")
-#     # out_video.write(array)
-#     count += 1
-
-#     # 顯示影像
-# #     cv2.imshow('myCam', dst) # 顯示原始影像
-#     cv2.imshow('myCam', array) # 顯示姿態估計影像
-
-#     # 若按下 q 鍵則離開迴圈
-#     if cv2.waitKey(1) == ord('q'):
-#         break
-
-# cv2.destroyAllWindows()
-# # out_video.release()
-# cap.release()
+cv2.destroyAllWindows()
+cap.release()
