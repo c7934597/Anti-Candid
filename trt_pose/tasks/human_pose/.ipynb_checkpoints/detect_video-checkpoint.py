@@ -106,10 +106,10 @@ def get_keypoint(humans, hnum, peaks):
 
 parser = argparse.ArgumentParser(description='TensorRT pose estimation run')
 parser.add_argument('--model', type=str, default='resnet', help = 'resnet or densenet' )
-parser.add_argument('--video', type=str, default='/home/minggatsby/src/test_images/video.avi', help = 'video file name' )
+parser.add_argument('--video', type=str, default='/home/spypiggy/src/test_images/video.avi', help = 'video file name' )
 args = parser.parse_args()
 
-with open('./trt_pose/tasks/human_pose/human_pose.json', 'r') as f:
+with open('human_pose.json', 'r') as f:
     human_pose = json.load(f)
 
 topology = trt_pose.coco.coco_category_to_topology(human_pose)
@@ -120,16 +120,16 @@ num_links = len(human_pose['skeleton'])
 
 if 'resnet' in args.model:
     print('------ model = resnet--------')
-    MODEL_WEIGHTS = './trt_pose/tasks/human_pose/resnet18_baseline_att_224x224_A_epoch_249.pth'
-    OPTIMIZED_MODEL = './trt_pose/tasks/human_pose/resnet18_baseline_att_224x224_A_epoch_249_trt.pth'
+    MODEL_WEIGHTS = 'resnet18_baseline_att_224x224_A_epoch_249.pth'
+    OPTIMIZED_MODEL = 'resnet18_baseline_att_224x224_A_epoch_249_trt.pth'
     model = trt_pose.models.resnet18_baseline_att(num_parts, 2 * num_links).cuda().eval()
     WIDTH = 224
     HEIGHT = 224
 
 else:    
     print('------ model = densenet--------')
-    MODEL_WEIGHTS = './trt_pose/tasks/human_pose/densenet121_baseline_att_256x256_B_epoch_160.pth'
-    OPTIMIZED_MODEL = './trt_pose/tasks/human_pose/densenet121_baseline_att_256x256_B_epoch_160_trt.pth'
+    MODEL_WEIGHTS = 'densenet121_baseline_att_256x256_B_epoch_160.pth'
+    OPTIMIZED_MODEL = 'densenet121_baseline_att_256x256_B_epoch_160_trt.pth'
     model = trt_pose.models.densenet121_baseline_att(num_parts, 2 * num_links).cuda().eval()
     WIDTH = 256
     HEIGHT = 256
@@ -211,29 +211,15 @@ def execute_2(img, org, count):
     print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
     return org
 
-'''
-v4l2-ctl --list-formats-ext指令查詢規範
-sudo systemctl restart nvargus-daemon指令重啟相機服務
-'''
-_WIDTH=640
-_HEIGHT=480
-_FLIP_METHOD=0
-
-# 選擇相機 MIPI / USB
-#camSet = 'nvarguscamerasrc sensor-id=0 ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12 ! nvvidconv flip-method='+str(_FLIP_METHOD)+' ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
-camSet = 'v4l2src device=/dev/video0 ! video/x-raw, width='+str(_WIDTH)+', height='+str(_HEIGHT)+', framerate=24/1 ! videoconvert ! appsink'
-# cap = cv2.VideoCapture(camSet)
-cap = cv2.VideoCapture(0)
-
-# cap = cv2.VideoCapture(args.video)
+cap = cv2.VideoCapture(args.video)
 ret_val, img = cap.read()
-# H, W, __ = img.shape
+H, W, __ = img.shape
 
-# fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-# dir, filename = os.path.split(args.video)
-# name, ext = os.path.splitext(filename)
-# out_video = cv2.VideoWriter('/home/minggatsby/src/test_images/result/%s_%s.mp4'%(args.model, name), fourcc, cap.get(cv2.CAP_PROP_FPS), (W, H))
-# count = 0
+fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+dir, filename = os.path.split(args.video)
+name, ext = os.path.splitext(filename)
+out_video = cv2.VideoWriter('/home/spypiggy/src/test_images/result/%s_%s.mp4'%(args.model, name), fourcc, cap.get(cv2.CAP_PROP_FPS), (W, H))
+count = 0
 
 X_compress = 640.0 / WIDTH * 1.0
 Y_compress = 480.0 / HEIGHT * 1.0
@@ -253,23 +239,15 @@ while cap.isOpened():
     ret_val, dst = cap.read()
     if ret_val == False:
         print("Frame Read End")
-        break       
+        break
     img = cv2.resize(dst, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
     pilimg = cv2.cvtColor(dst, cv2.COLOR_BGR2RGB)
     pilimg = PIL.Image.fromarray(pilimg)
     pilimg = execute_2(img, pilimg, count) 
     array = np.asarray(pilimg, dtype="uint8")
-    # out_video.write(array)
+    out_video.write(array)
     count += 1
-    
-    # 顯示影像
-#     cv2.imshow('myCam', dst) # 顯示原始影像
-    cv2.imshow('myCam', array) # 顯示姿態估計影像
-    
-    # 若按下 q 鍵則離開迴圈
-    if cv2.waitKey(1) == ord('q'):
-        break
 
 cv2.destroyAllWindows()
-# out_video.release()
+out_video.release()
 cap.release()
