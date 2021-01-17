@@ -20,18 +20,7 @@ import cv2
 # the webcam using cv2.VideoCapture(index) machinery. i.e. relying
 # on cv2's built-in function to capture images from the webcam.
 
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
-
-        
+  
 def add_camera_args(parser):
     """Add parser augument for camera options."""
     parser.add_argument('--image', type=str, default=None,
@@ -57,9 +46,7 @@ def add_camera_args(parser):
                         help='image width [640]')
     parser.add_argument('--height', type=int, default=480,
                         help='image height [480]')
-    parser.add_argument('--gstreamer', type=str2bool, nargs='?',
-                        const=False, default=True,
-                        help='use gstreamer [True]')
+
     return parser
 
 
@@ -88,7 +75,7 @@ def open_cam_rtsp(uri, width, height, latency):
 
 def open_cam_usb(self, dev, width, height):
     """Open a USB webcam."""
-    if self.usb_gstreamer:
+    if self.gstreamer:
         gst_str = ('v4l2src device=/dev/video{} ! '
                    'video/x-raw, width=(int){}, height=(int){} ! '
                    'videoconvert ! appsink').format(dev, width, height)
@@ -159,7 +146,7 @@ class Camera():
         self.do_resize = args.do_resize
         self.img_width = args.width
         self.img_height = args.height
-        self.usb_gstreamer = args.gstreamer
+        self.gstreamer = args.gstreamer
         self.cap = None
         self.thread = None
         self._open()  # try to open the camera
