@@ -10,12 +10,10 @@ cd src/Anti-Candid/
 ## 3. Mode
 ### Object Detection
 
-If it use gstreamer
-
+#### If it use gstreamer
 python3 trt_yolo.py -m yolov4-416 --usb 0
 
-If it doesn't use gstreamer
-
+#### If it doesn't use gstreamer
 python3 trt_yolo.py -m yolov4-416 --usb 0 --gstreamer false 
 
 
@@ -28,10 +26,8 @@ python3 detect_camera.py
 
 ### Object Detection & Pose_Estimation
 
-If it use gstreamer
-
+#### If it use gstreamer
 python3 main.py --usb 0
 
-If it doesn't use gstreamer
-
+#### If it doesn't use gstreamer
 python3 main.py --usb 0 -g 
