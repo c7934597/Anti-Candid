@@ -14,7 +14,7 @@ cd src/Anti-Candid/
 python3 trt_yolo.py -m yolov4-416 --usb 0
 
 #### If it doesn't use gstreamer
-python3 trt_yolo.py -m yolov4-416 --usb 0 --gstreamer false 
+python3 trt_yolo.py -m yolov4-416 --usb 0 -g 
 
 
 ### Pose_Estimation

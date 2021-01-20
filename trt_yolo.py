@@ -41,6 +41,9 @@ def parse_args():
     parser.add_argument(
         '-l', '--letter_box', action='store_true',
         help='inference with letterboxed image [False]')
+    parser.add_argument(
+        '-g', '--gstreamer', action='store_false',
+        help='inference with gstreamer [True]')
     args = parser.parse_args()
     return args
 
