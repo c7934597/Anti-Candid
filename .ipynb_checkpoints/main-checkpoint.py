@@ -39,8 +39,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description=desc)
     parser = add_camera_args(parser)
     parser.add_argument(
-        '-c', '--category_num', type=int, default=1,
-        help='number of object categories [1')
+        '-c', '--category_num', type=int, default=80,
+        help='number of object categories [80]')
     parser.add_argument(
         '-ym', '--yolo_model', type=str, default='yolov4-416', 
         help=('[yolov3|yolov3-tiny|yolov3-spp|yolov4|yolov4-tiny]-'
