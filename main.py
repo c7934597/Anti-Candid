@@ -42,7 +42,7 @@ def parse_args():
         '-c', '--category_num', type=int, default=80,
         help='number of object categories [80]')
     parser.add_argument(
-        '-ym', '--yolo_model', type=str, default='yolov4-416', 
+        '-ym', '--yolo_model', type=str, default='yolov4-tiny-416', 
         help=('[yolov3|yolov3-tiny|yolov3-spp|yolov4|yolov4-tiny]-'
               '[{dimension}], where dimension could be a single '
               'number (e.g. 288, 416, 608) or WxH (e.g. 416x256)'))
@@ -162,22 +162,22 @@ def preprocess(image):
 Draw to original image
 '''
 def execute(img, org, count):
-    start = time.time()
+    #start = time.time()
     data = preprocess(img)
     cmap, paf = model_trt(data)
     cmap, paf = cmap.detach().cpu(), paf.detach().cpu()
-    end = time.time()
+    #end = time.time()
     counts, objects, peaks = parse_objects(cmap, paf)#, cmap_threshold=0.15, link_threshold=0.15)
     for i in range(counts[0]):
         #print("Human index:%d "%( i ))
         kpoint = get_keypoint(objects, i, peaks)
         #print(kpoint)
         org = draw_keypoints(org, kpoint)
-    netfps = 1 / (end - start)  
+    #netfps = 1 / (end - start)  
     draw = PIL.ImageDraw.Draw(org)
-    draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))    
+    #draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))    
     print("Human count:%d len:%d "%(counts[0], len(counts)))
-    print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
+    #print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
     return org
 
 
