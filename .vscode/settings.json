@@ -1,0 +1,13 @@
+{
+    "python.pythonPath": "/home/minggatsby/文件/anaconda3/envs/yolov4/bin/python",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.unittestEnabled": true
+}
