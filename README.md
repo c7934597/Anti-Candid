@@ -19,7 +19,7 @@ python3 trt_yolo.py -m yolov4-416 --usb 0 -g
 
 ### Pose_Estimation
 
-cd src/Anti-Candid/trt_pose/tasks/human_pose/
+cd src/Anti-Candid/
 
 python3 detect_camera.py
 

@@ -133,27 +133,27 @@ def draw_keypoints(img, key):
         draw.line([ round(key[0][2] * w), round(key[0][1] * h), round(key[17][2] * w), round(key[17][1] * h)],width = thickness, fill=(255,255,0))
     return img
 
-# '''
-# hnum: 0 based human index
-# kpoint : keypoints (float type range : 0.0 ~ 1.0 ==> later multiply by image width, height
-# '''
-# def get_keypoint(humans, hnum, peaks):
-#     #check invalid human index
-#     kpoint = []
-#     human = humans[0][hnum]
-#     C = human.shape[0]
-#     for j in range(C):
-#         k = int(human[j])
-#         if k >= 0:
-#             peak = peaks[0][j][k]   # peak[1]:width, peak[0]:height
-#             peak = (j, float(peak[0]), float(peak[1]))
-#             kpoint.append(peak)
-#             #print('index:%d : success [%5.3f, %5.3f]'%(j, peak[1], peak[2]) )
-#         else:
-#             peak = (j, None, None)
-#             kpoint.append(peak)
-#             #print('index:%d : None %d'%(j, k) )
-#     return kpoint
+'''
+hnum: 0 based human index
+kpoint : keypoints (float type range : 0.0 ~ 1.0 ==> later multiply by image width, height
+'''
+def get_keypoint(humans, hnum, peaks):
+    #check invalid human index
+    kpoint = []
+    human = humans[0][hnum]
+    C = human.shape[0]
+    for j in range(C):
+        k = int(human[j])
+        if k >= 0:
+            peak = peaks[0][j][k]   # peak[1]:width, peak[0]:height
+            peak = (j, float(peak[0]), float(peak[1]))
+            kpoint.append(peak)
+            #print('index:%d : success [%5.3f, %5.3f]'%(j, peak[1], peak[2]) )
+        else:    
+            peak = (j, None, None)
+            kpoint.append(peak)
+            #print('index:%d : None %d'%(j, k) )
+    return kpoint
 
 def preprocess(image):
     global device
@@ -176,7 +176,7 @@ def execute(img, org, count):
     counts, objects, peaks = parse_objects(cmap, paf)#, cmap_threshold=0.15, link_threshold=0.15)
     for i in range(counts[0]):
         #print("Human index:%d "%( i ))
-        kpoint = get_keypoint(objects, i, peaks) # objects是有照到的部位(0有,-1沒有), peaks是座標
+        kpoint = get_keypoint(objects, i, peaks)
         #print(kpoint)
         org = draw_keypoints(org, kpoint)
     netfps = 1 / (end - start)  
@@ -185,130 +185,6 @@ def execute(img, org, count):
     print("Human count:%d len:%d "%(counts[0], len(counts)))
     print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
     return org
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-hnum: 0 based human index
-kpoint : keypoints (float type range : 0.0 ~ 1.0 ==> later multiply by image width, height
-'''
-def get_keypoint(humans, hnum, peaks):
-    #check invalid human index
-    kpoint = []
-    human = humans[0][hnum]
-    C = human.shape[0]
-    for j in range(C):
-        k = int(human[j])
-        if k >= 0:
-            peak = peaks[0][j][k]   # peak[1]:width, peak[0]:height
-            peak = (j, float(peak[0]), float(peak[1]))
-            kpoint.append(peak)
-            #print('index:%d : success [%5.3f, %5.3f]'%(j, peak[1], peak[2]) )
-            
-            if j==6:
-                print("右肩膀")
-            elif j==8:
-                print("右手肘")
-            elif j==10:
-                print("右手臂")
-
-            elif j==5:
-                print("左肩膀")
-            elif j==7:
-                print("左手肘")
-            elif j==9:
-                print("左手臂")
-
-        else:
-            peak = (j, None, None)
-            kpoint.append(peak)
-            #print('index:%d : None %d'%(j, k) )
-    return kpoint
-
-
-
-
-
-
-
-
-from math import sqrt, acos, degrees, atan, degrees
-
-# ----------------------------------------- Arslan Part ----------------------------------------------------------------------------------
-def get_angle(a,b):
-    #print(a)
-    #print(b)
-    del_y = a[1]-b[1]
-    del_x = b[0]-a[0]
-    if del_x == 0:
-        del_x = 0.1
-    #print("Del_X : "+str(del_x)+"-----Del_Y: "+str(del_y))
-    angle = 0
-
-    if del_x > 0 and del_y > 0:
-        angle = degrees(atan(del_y / del_x))
-    elif del_x < 0 and del_y > 0:
-        angle = degrees(atan(del_y / del_x)) + 180
-
-    return angle
-
-# ------------------------------------------------------------------------------------------------------------------------------------------	
-
-# ----------------------------------------- Maksim Part ----------------------------------------------------------------------------------
-
-def angle_gor(a,b,c,d):
-    ab=[a[0]-b[0],a[1]-b[1]]
-    ab1=[c[0]-d[0],c[1]-d[1]]
-    cos=abs(ab[0]*ab1[0]+ab[1]*ab1[1])/(sqrt(ab[0]**2+ab[1]**2)*sqrt(ab1[0]**2+ab1[1]**2))
-    ang = acos(cos)
-    return ang*180/np.pi
-
-
-def sit_ang(a,b,c,d):
-	ang=angle_gor(a,b,c,d)
-	s1=0
-	if ang != None:
-		#print("Angle",ang)
-		if ang < 120 and ang>40:
-			s1=1
-	return s1
-
-def sit_rec(a,b,c,d):
-	ab = [a[0] - b[0], a[1] - b[1]]
-	ab1 = [c[0] - d[0], c[1] - d[1]]
-	l1=sqrt(ab[0]**2+ab[1]**2)
-	l2=sqrt(ab1[0]**2+ab1[1]**2)
-	s=0
-	if l1!=0 and l2!=0:
-		#print(l1,l2, "---------->>>")
-		if l2/l1>=1.5:
-			s=1
-	return s
-	
-# ------------------------------------------------------------------------------------------------------------------------------------------	
-
-# ------------------------------------------------------- OUR CONTRIBUTIONS ----------------------------------------------------------------e
-
-
-
-
-
-
-
-
-
-
 
 '''
 v4l2-ctl --list-formats-ext指令查詢規範
