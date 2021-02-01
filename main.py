@@ -157,7 +157,7 @@ def preprocess(image):
     image.sub_(mean[:, None, None]).div_(std[:, None, None])
     return image[None, ...]
  
-    
+
 '''
 Draw to original image
 '''
@@ -174,7 +174,7 @@ def execute(img, org, count):
         #print(kpoint)
         org = draw_keypoints(org, kpoint)
     #netfps = 1 / (end - start)  
-    draw = PIL.ImageDraw.Draw(org)
+    # draw = PIL.ImageDraw.Draw(org)
     #draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))    
     print("Human count:%d len:%d "%(counts[0], len(counts)))
     #print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
@@ -204,12 +204,15 @@ def loop_and_detect(cam, trt_yolo, conf_th, vis):
             
         img = cv2.resize(dst, dsize=(WIDTH, HEIGHT), interpolation=cv2.INTER_AREA)
         pilimg = PIL.Image.fromarray(dst)
+
+        boxes, confs, clss = trt_yolo.detect(dst, conf_th)
+
         pilimg = execute(img, pilimg, count)
         img = np.asarray(pilimg, dtype="uint8")
         count += 1
-            
-        boxes, confs, clss = trt_yolo.detect(img, conf_th)
+    
         img = vis.draw_bboxes(img, boxes, confs, clss)
+
         img = show_fps(img, fps)
         cv2.imshow(WINDOW_NAME, img)
         toc = time.time()
@@ -223,8 +226,8 @@ def loop_and_detect(cam, trt_yolo, conf_th, vis):
         elif key == ord('F') or key == ord('f'):  # Toggle fullscreen
             full_scrn = not full_scrn
             set_display(WINDOW_NAME, full_scrn)
-            
-            
+
+
 def main():
     if args.category_num <= 0:
         raise SystemExit('ERROR: bad category_num (%d)!' % args.category_num)

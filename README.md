@@ -31,3 +31,9 @@ python3 main.py --usb 0
 
 #### If it doesn't use gstreamer
 python3 main.py --usb 0 -g 
+
+
+# Reference
+https://spyjetson.blogspot.com/
+
+https://github.com/jkjung-avt/tensorrt_demos

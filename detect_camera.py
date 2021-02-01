@@ -212,24 +212,25 @@ def get_keypoint(humans, hnum, peaks):
         k = int(human[j])
         if k >= 0:
             peak = peaks[0][j][k]   # peak[1]:width, peak[0]:height
+
+            if j==6:
+                print("右肩膀", peak[0], peak[1])
+            elif j==8:
+                print("右手肘", peak[0], peak[1])
+            elif j==10:
+                print("右手臂", peak[0], peak[1])
+
+            elif j==5:
+                print("左肩膀", peak[0], peak[1])
+            elif j==7:
+                print("左手肘", peak[0], peak[1])
+            elif j==9:
+                print("左手臂", peak[0], peak[1])
+
+
             peak = (j, float(peak[0]), float(peak[1]))
             kpoint.append(peak)
             #print('index:%d : success [%5.3f, %5.3f]'%(j, peak[1], peak[2]) )
-            
-            if j==6:
-                print("右肩膀")
-            elif j==8:
-                print("右手肘")
-            elif j==10:
-                print("右手臂")
-
-            elif j==5:
-                print("左肩膀")
-            elif j==7:
-                print("左手肘")
-            elif j==9:
-                print("左手臂")
-
         else:
             peak = (j, None, None)
             kpoint.append(peak)
