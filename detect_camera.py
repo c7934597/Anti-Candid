@@ -181,9 +181,9 @@ def execute(img, org, count):
         org = draw_keypoints(org, kpoint)
     netfps = 1 / (end - start)  
     draw = PIL.ImageDraw.Draw(org)
-    draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))    
-    print("Human count:%d len:%d "%(counts[0], len(counts)))
-    print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
+    draw.text((30, 30), "NET FPS:%4.1f"%netfps, font=fnt, fill=(0,255,0))
+    # print("Human count:%d len:%d "%(counts[0], len(counts)))
+    # print('===== Frmae[%d] Net FPS :%f ====='%(count, netfps))
     return org
 
 
@@ -208,25 +208,46 @@ def get_keypoint(humans, hnum, peaks):
     kpoint = []
     human = humans[0][hnum]
     C = human.shape[0]
+
+    test6=[]
+    test8=[]
+    test10=[]
+
+    test5=[]
+    test7=[]
+    test9=[]
+    IsWarning = False
+
     for j in range(C):
         k = int(human[j])
         if k >= 0:
             peak = peaks[0][j][k]   # peak[1]:width, peak[0]:height
 
             if j==6:
-                print("右肩膀", peak[0], peak[1])
+                # print("右肩膀", peak[0], peak[1])
+                test6.append(peak[0])
+                test6.append(peak[1])
             elif j==8:
                 print("右手肘", peak[0], peak[1])
+                test8.append(peak[0])
+                test8.append(peak[1])
             elif j==10:
                 print("右手臂", peak[0], peak[1])
+                test10.append(peak[0])
+                test10.append(peak[1])
 
             elif j==5:
-                print("左肩膀", peak[0], peak[1])
+                # print("左肩膀", peak[0], peak[1])
+                test5.append(peak[0])
+                test5.append(peak[1])
             elif j==7:
                 print("左手肘", peak[0], peak[1])
+                test7.append(peak[0])
+                test7.append(peak[1])
             elif j==9:
                 print("左手臂", peak[0], peak[1])
-
+                test9.append(peak[0])
+                test9.append(peak[1])
 
             peak = (j, float(peak[0]), float(peak[1]))
             kpoint.append(peak)
@@ -235,18 +256,33 @@ def get_keypoint(humans, hnum, peaks):
             peak = (j, None, None)
             kpoint.append(peak)
             #print('index:%d : None %d'%(j, k) )
+    
+    try:
+        ang1 = get_angle(test10 , test8)
+        # print(ang1)
+        if 0 < ang1 <= 90:
+            IsWarning = True
+    except:
+        print("right arm except")
+
+    try:
+        ang2 = get_angle(test7, test9)
+        # print(ang2)
+        if 90 <= ang2 < 180:
+            IsWarning = True
+    except:
+        print("left arm except")
+
+    if IsWarning:
+        print("Warning !")
+
     return kpoint
 
 
 
 
+from math import degrees, atan
 
-
-
-
-from math import sqrt, acos, degrees, atan, degrees
-
-# ----------------------------------------- Arslan Part ----------------------------------------------------------------------------------
 def get_angle(a,b):
     #print(a)
     #print(b)
@@ -263,48 +299,6 @@ def get_angle(a,b):
         angle = degrees(atan(del_y / del_x)) + 180
 
     return angle
-
-# ------------------------------------------------------------------------------------------------------------------------------------------	
-
-# ----------------------------------------- Maksim Part ----------------------------------------------------------------------------------
-
-def angle_gor(a,b,c,d):
-    ab=[a[0]-b[0],a[1]-b[1]]
-    ab1=[c[0]-d[0],c[1]-d[1]]
-    cos=abs(ab[0]*ab1[0]+ab[1]*ab1[1])/(sqrt(ab[0]**2+ab[1]**2)*sqrt(ab1[0]**2+ab1[1]**2))
-    ang = acos(cos)
-    return ang*180/np.pi
-
-
-def sit_ang(a,b,c,d):
-	ang=angle_gor(a,b,c,d)
-	s1=0
-	if ang != None:
-		#print("Angle",ang)
-		if ang < 120 and ang>40:
-			s1=1
-	return s1
-
-def sit_rec(a,b,c,d):
-	ab = [a[0] - b[0], a[1] - b[1]]
-	ab1 = [c[0] - d[0], c[1] - d[1]]
-	l1=sqrt(ab[0]**2+ab[1]**2)
-	l2=sqrt(ab1[0]**2+ab1[1]**2)
-	s=0
-	if l1!=0 and l2!=0:
-		#print(l1,l2, "---------->>>")
-		if l2/l1>=1.5:
-			s=1
-	return s
-	
-# ------------------------------------------------------------------------------------------------------------------------------------------	
-
-# ------------------------------------------------------- OUR CONTRIBUTIONS ----------------------------------------------------------------e
-
-
-
-
-
 
 
 
