@@ -228,11 +228,19 @@ def get_keypoint(humans, hnum, peaks):
                 test6.append(peak[0])
                 test6.append(peak[1])
             elif j==8:
+<<<<<<< HEAD
                 # print("右手肘", peak[0], peak[1])
                 test8.append(peak[0])
                 test8.append(peak[1])
             elif j==10:
                 # print("右手腕", peak[0], peak[1])
+=======
+                print("右手肘", peak[0], peak[1])
+                test8.append(peak[0])
+                test8.append(peak[1])
+            elif j==10:
+                print("右手臂", peak[0], peak[1])
+>>>>>>> 90c8d1f9333ba40f9e4e0fab4d4998429bdb68a0
                 test10.append(peak[0])
                 test10.append(peak[1])
 
@@ -241,11 +249,19 @@ def get_keypoint(humans, hnum, peaks):
                 test5.append(peak[0])
                 test5.append(peak[1])
             elif j==7:
+<<<<<<< HEAD
                 # print("左手肘", peak[0], peak[1])
                 test7.append(peak[0])
                 test7.append(peak[1])
             elif j==9:
                 # print("左手腕", peak[0], peak[1])
+=======
+                print("左手肘", peak[0], peak[1])
+                test7.append(peak[0])
+                test7.append(peak[1])
+            elif j==9:
+                print("左手臂", peak[0], peak[1])
+>>>>>>> 90c8d1f9333ba40f9e4e0fab4d4998429bdb68a0
                 test9.append(peak[0])
                 test9.append(peak[1])
 
