@@ -33,7 +33,7 @@ python3 main.py --usb 0
 python3 main.py --usb 0 -g 
 
 
-# Reference
+# References
 https://spyjetson.blogspot.com/
 
 https://github.com/jkjung-avt/tensorrt_demos
