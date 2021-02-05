@@ -5,7 +5,7 @@ Anti-Candid_Pose
 source /home/minggatsby/python/bin/activate
 
 ## 2. Load Path
-cd src/Anti-Candid/
+cd GitHub/Anti-Candid/
 
 ## 3. Mode
 ### Object Detection
@@ -19,7 +19,7 @@ python3 trt_yolo.py -m yolov4-416 --usb 0 -g
 
 ### Pose_Estimation
 
-cd src/Anti-Candid/
+cd GitHub/Anti-Candid/
 
 python3 detect_camera.py
 
