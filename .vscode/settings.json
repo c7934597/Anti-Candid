@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/minggatsby/文件/anaconda3/envs/yolov4/bin/python",
+    "python.pythonPath": "/home/minggatsby/python/bin/python",
     "python.testing.unittestArgs": [
         "-v",
         "-s",

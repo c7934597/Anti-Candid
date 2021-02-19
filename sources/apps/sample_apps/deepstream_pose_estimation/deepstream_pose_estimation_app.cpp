@@ -25,8 +25,8 @@
 /* The muxer output resolution must be set if the input streams will be of
  * different resolution. The muxer will scale all the input frames to this
  * resolution. */
-#define MUXER_OUTPUT_WIDTH 640
-#define MUXER_OUTPUT_HEIGHT 480
+#define MUXER_OUTPUT_WIDTH 1280
+#define MUXER_OUTPUT_HEIGHT 960
 
 /* Muxer batch formation timeout, for e.g. 40 millisec. Should ideally be set
  * based on the fastest source's framerate. */
@@ -42,6 +42,7 @@ template <class T>
 using Vec3D = std::vector<Vec2D<T>>;
 
 gint frame_number = 0;
+gint countWarning = 0;
 
 /*Method to parse information returned from the model*/
 std::tuple<Vec2D<int>, Vec3D<float>>
@@ -106,6 +107,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   NvDsDisplayMeta *dmeta = nvds_acquire_display_meta_from_pool(bmeta);
   nvds_add_display_meta_to_frame(frame_meta, dmeta);
 
+  bool IsWarning = false;
   for (auto &object : objects)
   {
     int C = object.size();
@@ -133,7 +135,6 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
       }
     }
 
-    bool IsWarning = false;
     for (int k = 0; k < K; k++)
     {
       int c_a = topology[k][2];
@@ -167,12 +168,22 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         dmeta->num_lines++;
       }
     }
-
-    if(IsWarning)
-      printf("Warning\n");
-    else
-      printf("Safe\n");
   }
+
+  if(IsWarning)
+  {
+    countWarning=countWarning+1;
+    printf("Warning %d\n", countWarning);
+  }
+  else
+  {
+    countWarning=0;
+    printf("Safe\n");
+  }
+
+  if(countWarning == 30)
+    printf("============================Command===========================\n");
+    // system("python3 dolock.py 192.168.110.22");
 }
 
 /* pgie_src_pad_buffer_probe  will extract metadata received from pgie

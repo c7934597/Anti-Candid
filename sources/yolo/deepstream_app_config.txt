@@ -1,7 +1,7 @@
 [application]
 enable-perf-measurement=1
 perf-measurement-interval-sec=1
-#gie-kitti-output-dir=/home/minggatsby/src/kitti_data/
+gie-kitti-output-dir=/home/minggatsby/src/kitti_data/
 
 
 [tiled-display]
