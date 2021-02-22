@@ -292,8 +292,10 @@ write_kitti_output (AppCtx * appCtx, NvDsBatchMeta * batch_meta)
     // fclose (bbox_params_dump_file);
   }
   if(countWarning == 30)
+  {
     printf("============================Command===========================\n");
-    // system("python3 dolock.py 192.168.110.22");
+    // system("python3 dolock.py 192.168.110.44");
+  }
 }
 
 /**

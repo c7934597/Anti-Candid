@@ -182,8 +182,10 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   }
 
   if(countWarning == 30)
+  {
     printf("============================Command===========================\n");
-    // system("python3 dolock.py 192.168.110.22");
+    // system("python3 dolock.py 192.168.110.44");
+  }
 }
 
 /* pgie_src_pad_buffer_probe  will extract metadata received from pgie
