@@ -189,7 +189,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   {
     printf("============================Command=========================== \n");
     RunLock = true;
-    // system("python3 dolock.py 192.168.110.44");
+    system("python dolock.py 192.168.110.44");
   }
 }
 
@@ -245,7 +245,7 @@ object_meta_data(NvDsBatchMeta *batch_meta)
     {
       printf("============================Command=========================== \n");
       RunLock = true;
-      // system("python3 dolock.py 192.168.110.44");
+      system("python dolock.py 192.168.110.44");
     }
     return;
 }
