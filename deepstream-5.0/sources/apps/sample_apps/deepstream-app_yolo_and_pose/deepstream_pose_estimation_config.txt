@@ -12,7 +12,7 @@ model-engine-file=pose_estimation.onnx_b1_gpu0_fp16.engine
 model-color-format=0
 
 # 0=FP32, 1=INT8, 2=FP16 mode
-network-mode=0
+network-mode=2
 
 # 0=Detector, 1=Classifier, 2=Segmentation, 100=Other
 network-type=100

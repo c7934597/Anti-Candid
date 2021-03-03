@@ -42,6 +42,8 @@ gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint SuspiciousItemWarning = 0;
 gboolean RunLock = false;
+gint WarningLimit = 15;
+const char *IPLocation = "python dolock.py 192.168.110.44";
 
 /*Method to parse information returned from the model*/
 std::tuple<Vec2D<int>, Vec3D<float>>
@@ -185,11 +187,11 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   else
     PeopleWarning=0;
 
-  if((PoseWarning == 30 || PeopleWarning==30) && not RunLock)
+  if((PoseWarning == WarningLimit || PeopleWarning==WarningLimit) && not RunLock)
   {
     printf("============================Command=========================== \n");
     RunLock = true;
-    system("python dolock.py 192.168.110.44");
+    // system(IPLocation);
   }
 }
 
@@ -241,11 +243,11 @@ object_meta_data(NvDsBatchMeta *batch_meta)
         else
           SuspiciousItemWarning = 0;
     }
-    if(SuspiciousItemWarning == 30 && not RunLock)
+    if(SuspiciousItemWarning == WarningLimit && not RunLock)
     {
       printf("============================Command=========================== \n");
       RunLock = true;
-      system("python dolock.py 192.168.110.44");
+      // system(IPLocation);
     }
     return;
 }
