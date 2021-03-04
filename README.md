@@ -24,6 +24,9 @@ make
 
 CUDA_VER=10.2 make -C nvdsinfer_custom_impl_Yolo
 
+(If memory isn't enough, it must generate engine alone)
+/usr/src/tensorrt/bin/trtexec --onnx=pose_estimation.onnx --saveEngine=pose_estimation.onnx_b1_gpu0_fp16.engine
+
 ## 4. Run
 ./deepstream-app -c deepstream_app_config.txt
 
