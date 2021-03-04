@@ -42,7 +42,9 @@ gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint SuspiciousItemWarning = 0;
 gboolean RunLock = false;
-gint WarningLimit = 15;
+gint PoseWarningLimit = 15;
+gint PeopleWarningLimit = 30;
+gint SuspiciousItemWarningLimit = 15;
 const char *IPLocation = "python dolock.py 192.168.110.44";
 
 /*Method to parse information returned from the model*/
@@ -182,12 +184,12 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   if(countPeople>1)
   {
     PeopleWarning++;
-    printf("Over People Warning : %d \n", countPeople);
+    printf("Over People Warning : %d \n", PeopleWarning);
   }
   else
     PeopleWarning=0;
 
-  if((PoseWarning == WarningLimit || PeopleWarning==WarningLimit) && not RunLock)
+  if((PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit) && not RunLock)
   {
     printf("============================Command=========================== \n");
     RunLock = true;
@@ -243,7 +245,7 @@ object_meta_data(NvDsBatchMeta *batch_meta)
         else
           SuspiciousItemWarning = 0;
     }
-    if(SuspiciousItemWarning == WarningLimit && not RunLock)
+    if(SuspiciousItemWarning == SuspiciousItemWarningLimit && not RunLock)
     {
       printf("============================Command=========================== \n");
       RunLock = true;
