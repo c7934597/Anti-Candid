@@ -34,5 +34,7 @@ parse-bbox-func-name=NvDsInferParseYolo
 custom-lib-path=nvdsinfer_custom_impl_Yolo/libnvdsinfer_custom_impl_Yolo.so
 engine-create-func-name=NvDsInferYoloCudaEngineGet
 
+# workspace-size=8000
+
 [class-attrs-all]
 pre-cluster-threshold=0.25
