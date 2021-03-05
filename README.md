@@ -2,13 +2,14 @@
 Anti-Candid_Pose
 
 ## 1. Getting Started
+(可選)
 Replace the OSD binaries (x86 or Jetson) in $DEEPSTREAM_DIR/libs with the ones provided in this repository under bin/. Please note that these are not inter-compatible across platforms.
 
 ## 2. Path
-cd /opt/nvidia/deepstream/deepstream-5.0/sources/apps/sample_apps/deepstream-app-yolo-and-pose/
+cd /opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/deepstream-app-yolo-and-pose/
 
 ## 3. Build
-先複製 /opt/nvidia/deepstream/deepstream-5.0/sources/apps/apps-common 到 /opt/nvidia/deepstream/deepstream-5.0/sources/apps/sample_apps/ 底下，然後貼上Code的資料夾
+先複製 /opt/nvidia/deepstream/deepstream-5.1/sources/apps/apps-common 到 /opt/nvidia/deepstream/deepstream-5.1/sources/apps/sample_apps/ 底下，然後貼上Code的資料夾
 
 (x86)
 sudo apt-get install libgstreamer1.0-dev
@@ -20,7 +21,7 @@ sudo apt-get install libjson-glib-dev
 
 sudo apt-get install libgstrtspserver-1.0-dev
 
-make
+CUDA_VER=10.2 make
 
 CUDA_VER=10.2 make -C nvdsinfer_custom_impl_Yolo
 
