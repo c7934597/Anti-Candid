@@ -47,6 +47,18 @@ gint PeopleWarningLimit = 30;
 gint SuspiciousItemWarningLimit = 15;
 const char *IPLocation = "python dolock.py 192.168.110.44";
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define DEST_PORT 21567 //目標地址埠號
+#define DEST_IP "192.168.110.44" //目標地址IP
+
 /*Method to parse information returned from the model*/
 std::tuple<Vec2D<int>, Vec3D<float>>
 parse_objects_from_tensor_meta(NvDsInferTensorMeta *tensor_meta)
@@ -192,8 +204,42 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   if((PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit) && not RunLock)
   {
     printf("============================Command=========================== \n");
-    RunLock = true;
+    PoseWarning = 0;
+    PeopleWarning = 0;
+    // RunLock = true;
     // system(IPLocation);
+
+
+
+
+    int sockfd = 0; //socket控制代碼 
+    struct sockaddr_in dest_addr; //目標地址資訊
+    char buf[] = "LOCK"; //儲存發送資料
+
+    sockfd=socket(AF_INET, SOCK_STREAM, 0); //建立socket
+    if(sockfd == -1){
+      printf("socket failed:%d\n",errno);
+    }
+
+    //socket的連線 
+    dest_addr.sin_family =  AF_INET; //sockaddr_in為Ipv4結構
+    dest_addr.sin_port = htons(DEST_PORT); // port number
+    dest_addr.sin_addr.s_addr = inet_addr(DEST_IP); //IP address
+    bzero(&dest_addr,sizeof(dest_addr)); //初始化，將struct涵蓋的bits設為0
+    
+    //連線方法，傳入控制代碼，目標地址和大小
+    if(connect(sockfd,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr))==-1){
+      printf("connect failed:%d",errno);//失敗時可以列印errno 
+    }else{
+      printf("connection success\n");
+      // send(sockfd, buf, sizeof(buf), 0);
+      printf("sent:%s\n",buf);
+    }
+
+    close(sockfd);  //關閉socket 
+
+
+
   }
 }
 
@@ -245,11 +291,50 @@ object_meta_data(NvDsBatchMeta *batch_meta)
         else
           SuspiciousItemWarning = 0;
     }
+
     if(SuspiciousItemWarning == SuspiciousItemWarningLimit && not RunLock)
     {
       printf("============================Command=========================== \n");
-      RunLock = true;
+      SuspiciousItemWarning = 0;
+      // RunLock = true;
       // system(IPLocation);
+
+
+
+
+
+      int sockfd = 0; //socket控制代碼 
+      struct sockaddr_in dest_addr; //目標地址資訊
+      char buf[] = "LOCK"; //儲存發送資料
+
+      sockfd=socket(AF_INET, SOCK_STREAM, 0); //建立socket
+      if(sockfd == -1){
+        printf("socket failed:%d\n",errno);
+      }
+
+      //socket的連線 
+      dest_addr.sin_family =  AF_INET; //sockaddr_in為Ipv4結構
+      dest_addr.sin_port = htons(DEST_PORT); // port number
+      dest_addr.sin_addr.s_addr = inet_addr(DEST_IP); //IP address
+      bzero(&dest_addr,sizeof(dest_addr)); //初始化，將struct涵蓋的bits設為0
+      
+      //連線方法，傳入控制代碼，目標地址和大小
+      if(connect(sockfd,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr))==-1){
+        printf("connect failed:%d",errno);//失敗時可以列印errno 
+      }else{
+        printf("connection success\n");
+        // send(sockfd, buf, sizeof(buf), 0);
+        printf("sent:%s\n",buf);
+      }
+
+      close(sockfd);  //關閉socket 
+
+
+
+
+
+
+
     }
     return;
 }
