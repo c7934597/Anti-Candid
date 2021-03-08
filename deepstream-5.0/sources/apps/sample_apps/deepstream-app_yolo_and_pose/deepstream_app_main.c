@@ -83,6 +83,20 @@ GOptionEntry entries[] = {
   ,
 };
 
+#include <unistd.h>
+#include <sys/types.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define CLIENT_PORT 21567 //目標地址埠號
+#define CLIENT_IP "192.168.110.44" //目標地址IP
+
+gchar alivebuf[]="ONLINE";
+
+extern "C" void 
+send_lock_socket(char buf[], bool detection);
+
 extern "C" void
 pose_meta_data(NvDsBatchMeta *batch_meta);
 
@@ -215,6 +229,8 @@ perf_cb (gpointer context, NvDsAppPerfStruct * str)
   }
   g_print ("\n");
   g_mutex_unlock (&fps_lock);
+
+  send_lock_socket(alivebuf , false);
 }
 
 /**

@@ -38,14 +38,23 @@ template <class T>
 using Vec3D = std::vector<Vec2D<T>>;
 
 gint frame_number = 0;
+
+#include <unistd.h>
+#include <sys/types.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#define CLIENT_PORT 21567 //目標地址埠號
+#define CLIENT_IP "192.168.110.44" //目標地址IP
+
 gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint SuspiciousItemWarning = 0;
-gboolean RunLock = false;
 gint PoseWarningLimit = 15;
 gint PeopleWarningLimit = 30;
 gint SuspiciousItemWarningLimit = 15;
-const char *IPLocation = "python dolock.py 192.168.110.44";
+gchar lockbuf[]="LOCK";
 
 /*Method to parse information returned from the model*/
 std::tuple<Vec2D<int>, Vec3D<float>>
@@ -98,6 +107,57 @@ float get_angle(float a0, float a1, float b0, float b1)
       angle = convert_radian_to_degrees(atan(del_y / del_x)) + 180;
 
     return angle;
+}
+
+extern "C" void
+send_lock_socket(char buf[], bool detection){
+  int sockfd = 0;
+  int so_broadcast = 1;
+  struct sockaddr_in server_addr, client_addr;
+
+  /*Create an IPv4 UDP socket*/
+  if((sockfd = socket(AF_INET, SOCK_DGRAM, 0))<0){
+    perror("socket");
+    return;
+  }
+
+  /*SO_BROADCAST: broadcast attribute*/
+  if(setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &so_broadcast, sizeof(so_broadcast))<0){
+    perror("setsockopt");
+    return;
+  }
+
+  server_addr.sin_family = AF_INET; /*IPv4*/
+  server_addr.sin_port = htons(INADDR_ANY); /*All the port*/
+  server_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); /*Broadcast address*/
+
+  if((bind(sockfd, (struct sockaddr*)&server_addr, sizeof(struct sockaddr))) != 0){
+    perror("bind");
+    return;
+  }
+
+  client_addr.sin_family = AF_INET; /*IPv4*/
+  client_addr.sin_port = htons(CLIENT_PORT);  /*Set port number*/
+  client_addr.sin_addr.s_addr = inet_addr(CLIENT_IP); /*Set the broadcast address*/
+  int clientlen = sizeof(client_addr);
+
+  /*Use sendto() to send messages to client*/
+  /*sendto() doesn't need to be connected*/
+  if((sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr*)&client_addr, (socklen_t)clientlen)) < 0){
+    perror("sendto");
+    return;
+  }
+  else{
+    printf("send msg %s\n", buf);
+    if(detection){
+      PoseWarning = 0;
+      PeopleWarning = 0;
+      SuspiciousItemWarning = 0;
+    }
+  }
+
+  close(sockfd);  /*close socket*/
+  return;
 }
 
 /* MetaData to handle drawing onto the on-screen-display */
@@ -189,11 +249,9 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   else
     PeopleWarning=0;
 
-  if((PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit) && not RunLock)
+  if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit)
   {
-    printf("============================Command=========================== \n");
-    RunLock = true;
-    // system(IPLocation);
+    send_lock_socket(lockbuf , true);
   }
 }
 
@@ -245,11 +303,10 @@ object_meta_data(NvDsBatchMeta *batch_meta)
         else
           SuspiciousItemWarning = 0;
     }
-    if(SuspiciousItemWarning == SuspiciousItemWarningLimit && not RunLock)
+
+    if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
     {
-      printf("============================Command=========================== \n");
-      RunLock = true;
-      // system(IPLocation);
+      send_lock_socket(lockbuf , true);
     }
     return;
 }
