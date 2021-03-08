@@ -68,7 +68,13 @@ nvbuf-memory-type=0
 gpu-id=0
 live-source=0
 batch-size=1
-batched-push-timeout=10000
+
+# (1/max_fps)
+# 12fps source: 1 / 12 * 1000 * 1000 = 83333 (microseconds)
+# 25fps source: 1 / 25 * 1000 * 1000 = 40000 (microseconds)
+# 30fps source: 1 / 30 * 1000 * 1000 = 33333 (microseconds)
+batched-push-timeout=33333
+
 width=640
 height=480
 enable-padding=0
