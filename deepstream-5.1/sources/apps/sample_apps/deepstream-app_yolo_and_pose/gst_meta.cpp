@@ -26,7 +26,7 @@
 
 /* Muxer batch formation timeout, for e.g. 40 millisec. Should ideally be set
  * based on the fastest source's framerate. */
-#define MUXER_BATCH_TIMEOUT_USEC 4000000
+#define MUXER_BATCH_TIMEOUT_USEC 10000
 
 template <class T>
 using Vec1D = std::vector<T>;
