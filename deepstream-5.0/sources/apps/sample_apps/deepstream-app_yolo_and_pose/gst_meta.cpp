@@ -148,7 +148,7 @@ send_lock_socket(char buf[], bool detection){
     return;
   }
   else{
-    // printf("send msg %s\n", buf);
+    printf("send msg %s\n", buf);
     if(detection){
       PoseWarning = 0;
       PeopleWarning = 0;
