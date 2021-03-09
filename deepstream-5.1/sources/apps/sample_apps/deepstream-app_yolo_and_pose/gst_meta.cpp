@@ -148,7 +148,7 @@ send_lock_socket(char buf[], bool detection){
     return;
   }
   else{
-    printf("send msg %s\n", buf);
+    // printf("send msg %s\n", buf);
     if(detection){
       PoseWarning = 0;
       PeopleWarning = 0;
@@ -236,7 +236,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   if(IsWarning)
   {
     PoseWarning++;
-    printf("Pose Warning : %d \n", PoseWarning);
+    // printf("Pose Warning : %d \n", PoseWarning);
   }
   else
     PoseWarning=0;
@@ -244,7 +244,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   if(countPeople>1)
   {
     PeopleWarning++;
-    printf("Over People Warning : %d \n", PeopleWarning);
+    // printf("Over People Warning : %d \n", PeopleWarning);
   }
   else
     PeopleWarning=0;
@@ -298,7 +298,7 @@ object_meta_data(NvDsBatchMeta *batch_meta)
         if(IsWarning)
         {
           SuspiciousItemWarning++;
-          printf("Suspicious Item Warning : %d \n", SuspiciousItemWarning);
+          // printf("Suspicious Item Warning : %d \n", SuspiciousItemWarning);
         }
         else
           SuspiciousItemWarning = 0;
