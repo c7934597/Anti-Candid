@@ -94,6 +94,9 @@ GOptionEntry entries[] = {
 
 gchar alivebuf[]="ONLINE";
 
+extern void
+readConfig();
+
 extern void 
 send_lock_socket(char buf[], bool detection);
 
@@ -685,6 +688,9 @@ main (int argc, char *argv[])
       return_value = -1;
       goto done;
     }
+
+    readConfig();
+
     // pose estimation
     if (appCtx[i]->config.primary_gie_config.enable) {
         GstPad *src_pad1 = NULL;

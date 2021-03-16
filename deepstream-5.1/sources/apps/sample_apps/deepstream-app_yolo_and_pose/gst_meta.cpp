@@ -45,8 +45,10 @@ gint frame_number = 0;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define CLIENT_PORT 21567 //目標地址埠號
-#define CLIENT_IP "192.168.110.44" //目標地址IP
+// #define CLIENT_IP "192.168.110.44" //目標地址IP
+
+#define CONFIG_PATH "deepstream_app_server_config.txt"
+#define SIZE 256
 
 gint PoseWarning = 0;
 gint PeopleWarning = 0;
@@ -55,6 +57,41 @@ gint PoseWarningLimit = 15;
 gint PeopleWarningLimit = 30;
 gint SuspiciousItemWarningLimit = 15;
 gchar lockbuf[]="LOCK";
+
+/*config vars*/  
+gint portnumber = 0;
+// gchar ipaddress[SIZE];
+
+extern "C" void
+readConfig(){ 
+  char name[SIZE];
+  char value[SIZE];
+
+  // memset(ipaddress,0,SIZE);
+  
+  FILE *fp = fopen(CONFIG_PATH, "r");
+  if (fp == NULL){
+    return;
+  }else{
+    while(!feof(fp)){
+      memset(name,0,SIZE);
+      memset(value,0,SIZE);
+
+      /*Read Data*/
+      fscanf(fp,"%s = %s\n", name, value);
+      
+      if (!strcmp(name, "portnumber")){
+        portnumber = atoi(value);
+      }
+      // else if(!strcmp(ipaddress, "ipaddress")){
+      //   strcpy(ipaddress, value);
+      // }
+    }
+  }
+  fclose(fp);
+ 
+  return;
+}
 
 /*Method to parse information returned from the model*/
 std::tuple<Vec2D<int>, Vec3D<float>>
@@ -137,8 +174,9 @@ send_lock_socket(char buf[], bool detection){
   }
 
   client_addr.sin_family = AF_INET; /*IPv4*/
-  client_addr.sin_port = htons(CLIENT_PORT);  /*Set port number*/
-  client_addr.sin_addr.s_addr = inet_addr(CLIENT_IP); /*Set the broadcast address*/
+  client_addr.sin_port = htons(portnumber);  /*Set port number*/
+  client_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); /*Set the broadcast address*/
+  // client_addr.sin_addr.s_addr = inet_addr(CLIENT_IP); /*Set the broadcast address*/
   int clientlen = sizeof(client_addr);
 
   /*Use sendto() to send messages to client*/
