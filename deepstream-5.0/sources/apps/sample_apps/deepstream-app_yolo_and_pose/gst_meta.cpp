@@ -18,11 +18,11 @@
 
 #define MAX_DISPLAY_LEN 64
 
-/* The muxer output resolution must be set if the input streams will be of
- * different resolution. The muxer will scale all the input frames to this
- * resolution. */
-#define MUXER_OUTPUT_WIDTH 416
-#define MUXER_OUTPUT_HEIGHT 416
+// /* The muxer output resolution must be set if the input streams will be of
+//  * different resolution. The muxer will scale all the input frames to this
+//  * resolution. */
+// #define MUXER_OUTPUT_WIDTH 416
+// #define MUXER_OUTPUT_HEIGHT 416
 
 /* Muxer batch formation timeout, for e.g. 40 millisec. Should ideally be set
  * based on the fastest source's framerate. */
@@ -62,6 +62,12 @@ gchar lockbuf[]="LOCK";
 gint portnumber = 0;
 // gchar ipaddress[SIZE];
 
+/* The muxer output resolution must be set if the input streams will be of
+ * different resolution. The muxer will scale all the input frames to this
+ * resolution. */
+gint pose_estimation_muxer_output_width = 0;
+gint pose_estimation_muxer_output_height = 0;
+
 extern "C" void
 readConfig(){ 
   char name[SIZE];
@@ -86,6 +92,12 @@ readConfig(){
       // else if(!strcmp(ipaddress, "ipaddress")){
       //   strcpy(ipaddress, value);
       // }
+      else if(!strcmp(name, "pose_estimation_muxer_output_width")){
+        pose_estimation_muxer_output_width = atoi(value);
+      }
+      else if(!strcmp(name, "pose_estimation_muxer_output_height")){
+        pose_estimation_muxer_output_height = atoi(value);
+      }
     }
   }
   fclose(fp);
@@ -218,8 +230,8 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
       if (k >= 0)
       {
         auto &peak = normalized_peaks[j][k];
-        int x = peak[1] * MUXER_OUTPUT_WIDTH;
-        int y = peak[0] * MUXER_OUTPUT_HEIGHT;
+        int x = peak[1] * pose_estimation_muxer_output_width;
+        int y = peak[0] * pose_estimation_muxer_output_height;
         if (dmeta->num_circles == MAX_ELEMENTS_IN_DISPLAY_META)
         {
           dmeta = nvds_acquire_display_meta_from_pool(bmeta);
@@ -249,10 +261,10 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
           if (angle > 0)
             IsWarning = true;
         }
-        int x0 = peak0[1] * MUXER_OUTPUT_WIDTH;
-        int y0 = peak0[0] * MUXER_OUTPUT_HEIGHT;
-        int x1 = peak1[1] * MUXER_OUTPUT_WIDTH;
-        int y1 = peak1[0] * MUXER_OUTPUT_HEIGHT;
+        int x0 = peak0[1] * pose_estimation_muxer_output_width;
+        int y0 = peak0[0] * pose_estimation_muxer_output_height;
+        int x1 = peak1[1] * pose_estimation_muxer_output_width;
+        int y1 = peak1[0] * pose_estimation_muxer_output_height;
         if (dmeta->num_lines == MAX_ELEMENTS_IN_DISPLAY_META)
         {
           dmeta = nvds_acquire_display_meta_from_pool(bmeta);

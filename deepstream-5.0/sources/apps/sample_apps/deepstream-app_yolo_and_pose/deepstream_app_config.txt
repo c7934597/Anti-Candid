@@ -7,8 +7,8 @@ perf-measurement-interval-sec=1
 enable=0
 rows=1
 columns=1
-width=640
-height=480
+width=224
+height=224
 gpu-id=0
 nvbuf-memory-type=0
 
@@ -75,8 +75,8 @@ batch-size=1
 # 30fps source: 1 / 30 * 1000 * 1000 = 33333 (microseconds)
 batched-push-timeout=33333
 
-width=640
-height=480
+width=224
+height=224
 enable-padding=0
 nvbuf-memory-type=0
 
