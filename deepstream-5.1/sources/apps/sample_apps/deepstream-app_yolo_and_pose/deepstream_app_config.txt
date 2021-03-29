@@ -26,8 +26,8 @@ uri=file:///opt/nvidia/deepstream/deepstream-5.0/samples/streams/sample_1080p_h2
 num-sources=1
 
 # Resolution
-camera-width=640
-camera-height=480
+camera-width=320
+camera-height=240
 
 # FPS
 camera-fps-n=30

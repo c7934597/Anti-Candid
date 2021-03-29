@@ -5,8 +5,6 @@ offsets=123.675;116.28;103.53
 
 onnx-file=pose_estimation.onnx
 model-engine-file=pose_estimation.onnx_b1_gpu0_fp16.engine
-#labelfile-path=labels.txt
-#num-detected-classes=4
 
 # 0=RGB, 1=BGR
 model-color-format=0

@@ -4,11 +4,11 @@ perf-measurement-interval-sec=1
 
 
 [tiled-display]
-enable=1
+enable=0
 rows=1
 columns=1
-width=1920
-height=1080
+width=224
+height=224
 gpu-id=0
 nvbuf-memory-type=0
 
@@ -44,7 +44,7 @@ nvbuf-memory-type=0
 [sink0]
 enable=1
 #Type - 1=FakeSink 2=EglSink 3=File
-type=2
+type=1
 sync=0
 source-id=0
 gpu-id=0
@@ -52,7 +52,7 @@ nvbuf-memory-type=0
 
 
 [osd]
-enable=1
+enable=0
 gpu-id=0
 border-width=1
 text-size=15
@@ -75,8 +75,8 @@ batch-size=1
 # 30fps source: 1 / 30 * 1000 * 1000 = 33333 (microseconds)
 batched-push-timeout=33333
 
-width=1920
-height=1080
+width=224
+height=224
 enable-padding=0
 nvbuf-memory-type=0
 

@@ -53,9 +53,6 @@ gint frame_number = 0;
 gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint SuspiciousItemWarning = 0;
-gint PoseWarningLimit = 15;
-gint PeopleWarningLimit = 30;
-gint SuspiciousItemWarningLimit = 15;
 gchar lockbuf[]="LOCK";
 
 /*config vars*/  
@@ -67,6 +64,10 @@ gint portnumber = 0;
  * resolution. */
 gint pose_estimation_muxer_output_width = 0;
 gint pose_estimation_muxer_output_height = 0;
+
+gint PoseWarningLimit = 15;
+gint PeopleWarningLimit = 30;
+gint SuspiciousItemWarningLimit = 15;
 
 extern "C" void
 readConfig(){ 
@@ -97,6 +98,15 @@ readConfig(){
       }
       else if(!strcmp(name, "pose_estimation_muxer_output_height")){
         pose_estimation_muxer_output_height = atoi(value);
+      }
+      else if(!strcmp(name, "PoseWarningLimit")){
+        PoseWarningLimit = atoi(value);
+      }
+      else if(!strcmp(name, "PeopleWarningLimit")){
+        PeopleWarningLimit = atoi(value);
+      }
+      else if(!strcmp(name, "SuspiciousItemWarningLimit")){
+        SuspiciousItemWarningLimit = atoi(value);
       }
     }
   }
