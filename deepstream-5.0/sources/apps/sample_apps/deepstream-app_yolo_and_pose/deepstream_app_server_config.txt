@@ -1,6 +1,6 @@
 portnumber = 21567
 pose_estimation_muxer_output_width = 224
 pose_estimation_muxer_output_height = 224
-PoseWarningLimit = 15
-PeopleWarningLimit = 30
-SuspiciousItemWarningLimit = 15
+PoseWarningLimit = 2
+PeopleWarningLimit = 4
+SuspiciousItemWarningLimit = 2

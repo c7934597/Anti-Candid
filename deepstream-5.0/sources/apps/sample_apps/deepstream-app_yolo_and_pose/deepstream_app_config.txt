@@ -30,7 +30,7 @@ camera-width=320
 camera-height=240
 
 # FPS
-camera-fps-n=30
+camera-fps-n=5
 camera-fps-d=1
 
 # /dev/video0
@@ -73,7 +73,7 @@ batch-size=1
 # 12fps source: 1 / 12 * 1000 * 1000 = 83333 (microseconds)
 # 25fps source: 1 / 25 * 1000 * 1000 = 40000 (microseconds)
 # 30fps source: 1 / 30 * 1000 * 1000 = 33333 (microseconds)
-batched-push-timeout=33333
+batched-push-timeout=200000
 
 width=224
 height=224
