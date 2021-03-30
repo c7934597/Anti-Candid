@@ -42,9 +42,9 @@ nvbuf-memory-type=0
 
 
 [sink0]
-enable=1
+enable=0
 #Type - 1=FakeSink 2=EglSink 3=File
-type=1
+type=2
 sync=0
 source-id=0
 gpu-id=0
