@@ -1,32 +1,10 @@
 #include "post_process.cpp"
 
-/*#include <gst/gst.h>
-#include <glib.h>
-#include <stdio.h>
-
-#include "gstnvdsmeta.h"
-#include "nvdsgstutils.h"
-#include "nvbufsurface.h"*/
-
 #include <vector>
 #include <array>
 #include <queue>
 #include <cmath>
 #include <string>
-
-#define EPS 1e-6
-
-#define MAX_DISPLAY_LEN 64
-
-// /* The muxer output resolution must be set if the input streams will be of
-//  * different resolution. The muxer will scale all the input frames to this
-//  * resolution. */
-// #define MUXER_OUTPUT_WIDTH 416
-// #define MUXER_OUTPUT_HEIGHT 416
-
-/* Muxer batch formation timeout, for e.g. 40 millisec. Should ideally be set
- * based on the fastest source's framerate. */
-#define MUXER_BATCH_TIMEOUT_USEC 33333
 
 template <class T>
 using Vec1D = std::vector<T>;
