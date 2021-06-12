@@ -268,6 +268,10 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1}; 
         dmeta->num_lines++;
       }
+      else if((k == 5 || k == 6) && (object[c_a] < 0 && object[c_b] < 0))
+      {
+        IsWarning = true;
+      }
     }
   }
 
@@ -279,15 +283,13 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   else
     PoseWarning=0;
 
-  if(countPeople == 1 )
-  {
-    PeopleWarning=0;
-  }
-  else
+  if(countPeople>1)
   {
     PeopleWarning++;
     // printf("Over People Warning : %d \n", PeopleWarning);
   }
+  else
+    PeopleWarning=0;
 
   if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit)
   {

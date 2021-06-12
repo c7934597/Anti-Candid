@@ -37,4 +37,4 @@ engine-create-func-name=NvDsInferYoloCudaEngineGet
 # workspace-size=8000
 
 [class-attrs-all]
-pre-cluster-threshold=0.25
+pre-cluster-threshold=0.5
