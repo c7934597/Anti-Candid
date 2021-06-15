@@ -268,7 +268,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1}; 
         dmeta->num_lines++;
       }
-      else if((k == 5 || k == 6) && (object[c_a] < 0 && object[c_b] < 0))
+      else if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
       {
         IsWarning = true;
       }
