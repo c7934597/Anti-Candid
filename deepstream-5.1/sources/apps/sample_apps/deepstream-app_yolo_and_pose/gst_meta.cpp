@@ -265,7 +265,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         lparams.y2 = y1;
         lparams.line_width = 3;
         //g_print("%d\n",k);
-        lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1}; 
+        lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1};
         dmeta->num_lines++;
       }
       else if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
@@ -322,7 +322,39 @@ pose_meta_data(NvDsBatchMeta *batch_meta)
 }
 
 extern "C" void
-object_meta_data(NvDsBatchMeta *batch_meta)
+object_meta_data0(NvDsBatchMeta *batch_meta)
+{
+    NvDsMetaList *l_frame = NULL;
+    NvDsMetaList *l_obj = NULL;
+   
+    for (l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
+        NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
+        bool IsWarning = false;
+        for (l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
+            NvDsObjectMeta *obj_meta = (NvDsObjectMeta *)l_obj->data;
+            if (obj_meta->obj_label[0] != '\0')
+            {
+              IsWarning = true;
+            }
+        }
+        if(IsWarning)
+        {
+          SuspiciousItemWarning++;
+          // printf("Suspicious Item Warning : %d \n", SuspiciousItemWarning);
+        }
+        else
+          SuspiciousItemWarning = 0;
+    }
+
+    if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
+    {
+      send_lock_socket(lockbuf , true);
+    }
+    return;
+}
+
+extern "C" void
+object_meta_data1(NvDsBatchMeta *batch_meta)
 {
     NvDsMetaList *l_frame = NULL;
     NvDsMetaList *l_obj = NULL;

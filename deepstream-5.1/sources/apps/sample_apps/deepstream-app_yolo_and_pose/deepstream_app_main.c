@@ -89,6 +89,9 @@ GOptionEntry entries[] = {
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#define CLIENT_PORT 21567 //目標地址埠號
+#define CLIENT_IP "192.168.110.44" //目標地址IP
+
 gchar alivebuf[]="ONLINE";
 
 extern void
@@ -125,7 +128,20 @@ sgie0_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
   GstBuffer *buf = (GstBuffer *)info->data;
   NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
 
-  object_meta_data(batch_meta);
+  object_meta_data0(batch_meta);
+  return GST_PAD_PROBE_OK;
+}
+
+/* pgie_src_pad_buffer_probe  will extract metadata received from pgie
+ * and update params for drawing rectangle, object information etc. */
+static GstPadProbeReturn
+sgie1_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
+{
+  //gchar *msg = NULL;
+  GstBuffer *buf = (GstBuffer *)info->data;
+  NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
+
+  object_meta_data1(batch_meta);
   return GST_PAD_PROBE_OK;
 }
 
@@ -706,8 +722,8 @@ main (int argc, char *argv[])
     // obejct detection
     if (appCtx[i]->config.secondary_gie_sub_bin_config[0].enable) {
         GstPad *src_pad2 = NULL;
-        GstElement *yolo = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[0].secondary_gie;
-        src_pad2 = gst_element_get_static_pad (yolo, "src");
+        GstElement *yolo0 = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[0].secondary_gie;
+        src_pad2 = gst_element_get_static_pad (yolo0, "src");
         if (!src_pad2)
             g_print ("Unable to get secondary_gie0 src pad\n");
         else
@@ -715,6 +731,21 @@ main (int argc, char *argv[])
             gst_pad_add_probe(src_pad2, GST_PAD_PROBE_TYPE_BUFFER,
                       sgie0_src_pad_buffer_probe, NULL, NULL);
             gst_object_unref (src_pad2);
+        }
+    }
+
+    // face detection
+    if (appCtx[i]->config.secondary_gie_sub_bin_config[1].enable) {
+        GstPad *src_pad3 = NULL;
+        GstElement *yolo1 = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[1].secondary_gie;
+        src_pad3 = gst_element_get_static_pad (yolo1, "src");
+        if (!src_pad3)
+            g_print ("Unable to get secondary_gie1 src pad\n");
+        else
+        {
+            gst_pad_add_probe(src_pad3, GST_PAD_PROBE_TYPE_BUFFER,
+                      sgie1_src_pad_buffer_probe, NULL, NULL);
+            gst_object_unref (src_pad3);
         }
     }
   }
