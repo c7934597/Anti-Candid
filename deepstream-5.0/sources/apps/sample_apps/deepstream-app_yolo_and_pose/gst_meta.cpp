@@ -23,8 +23,6 @@ gint frame_number = 0;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-// #define CLIENT_IP "192.168.110.44" //目標地址IP
-
 #define CONFIG_PATH "deepstream_app_server_config.txt"
 #define SIZE 256
 
@@ -35,7 +33,7 @@ gchar lockbuf[]="LOCK";
 
 /*config vars*/  
 gint portnumber = 0;
-// gchar ipaddress[SIZE];
+gchar ipaddress[SIZE];
 
 /* The muxer output resolution must be set if the input streams will be of
  * different resolution. The muxer will scale all the input frames to this
@@ -52,7 +50,7 @@ readConfig(){
   char name[SIZE];
   char value[SIZE];
 
-  // memset(ipaddress,0,SIZE);
+  memset(ipaddress,0,SIZE);
   
   FILE *fp = fopen(CONFIG_PATH, "r");
   if (fp == NULL){
@@ -65,12 +63,15 @@ readConfig(){
       /*Read Data*/
       fscanf(fp,"%s = %s\n", name, value);
       
-      if (!strcmp(name, "portnumber")){
+      if(!strcmp(name, "port_lock")){
+        port_lock = atoi(value);
+      }
+      else if (!strcmp(name, "portnumber")){
         portnumber = atoi(value);
       }
-      // else if(!strcmp(ipaddress, "ipaddress")){
-      //   strcpy(ipaddress, value);
-      // }
+      else if(!strcmp(name, "ipaddress")){
+        strcpy(ipaddress, value);
+      }
       else if(!strcmp(name, "pose_estimation_muxer_output_width")){
         pose_estimation_muxer_output_width = atoi(value);
       }
@@ -175,8 +176,13 @@ send_lock_socket(char buf[], bool detection){
 
   client_addr.sin_family = AF_INET; /*IPv4*/
   client_addr.sin_port = htons(portnumber);  /*Set port number*/
-  client_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); /*Set the broadcast address*/
-  // client_addr.sin_addr.s_addr = inet_addr(CLIENT_IP); /*Set the broadcast address*/
+  if (port_lock == 1)
+  {
+    client_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); /*Set the broadcast address*/
+  }
+  else{
+    client_addr.sin_addr.s_addr = inet_addr(ipaddress); /*Set the broadcast address*/
+  }
   int clientlen = sizeof(client_addr);
 
   /*Use sendto() to send messages to client*/
