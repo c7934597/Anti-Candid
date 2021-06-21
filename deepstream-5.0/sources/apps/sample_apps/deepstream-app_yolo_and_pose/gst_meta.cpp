@@ -32,6 +32,7 @@ gint SuspiciousItemWarning = 0;
 gchar lockbuf[]="LOCK";
 
 /*config vars*/  
+gint port_lock = 0;
 gint portnumber = 0;
 gchar ipaddress[SIZE];
 
@@ -271,10 +272,10 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         lparams.y2 = y1;
         lparams.line_width = 3;
         //g_print("%d\n",k);
-        lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1}; 
+        lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1};
         dmeta->num_lines++;
       }
-      else if((k == 5 || k == 6) && (object[c_a] < 0 && object[c_b] < 0))
+      else if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
       {
         IsWarning = true;
       }
@@ -289,7 +290,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   else
     PoseWarning=0;
 
-  if(countPeople>1)
+  if(countPeople != 1)
   {
     PeopleWarning++;
     // printf("Over People Warning : %d \n", PeopleWarning);

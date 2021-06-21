@@ -290,7 +290,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   else
     PoseWarning=0;
 
-  if(countPeople>1)
+  if(countPeople != 1)
   {
     PeopleWarning++;
     // printf("Over People Warning : %d \n", PeopleWarning);
