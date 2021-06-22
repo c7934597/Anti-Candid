@@ -1,8 +1,8 @@
 port_lock = 1
 portnumber = 21567
 ipaddress = 192.168.110.38
-pose_estimation_muxer_output_width = 224
-pose_estimation_muxer_output_height = 224
+pose_estimation_muxer_output_width = 640
+pose_estimation_muxer_output_height = 480
 PoseWarningLimit = 15
 PeopleWarningLimit = 30
 SuspiciousItemWarningLimit = 15

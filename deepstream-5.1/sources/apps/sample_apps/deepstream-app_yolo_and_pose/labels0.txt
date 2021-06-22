@@ -1,2 +1,2 @@
-SuspiciousItem0000
-SuspiciousItem0000
+SuspiciousItem
+SuspiciousItem
