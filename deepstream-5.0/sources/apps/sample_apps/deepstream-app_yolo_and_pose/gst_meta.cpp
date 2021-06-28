@@ -301,6 +301,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
   if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit)
   {
     send_lock_socket(lockbuf , true);
+    // system("killall deepstream-app");
   }
 }
 
@@ -356,6 +357,7 @@ object_meta_data(NvDsBatchMeta *batch_meta)
     if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
     {
       send_lock_socket(lockbuf , true);
+      // system("killall deepstream-app");
     }
     return;
 }
