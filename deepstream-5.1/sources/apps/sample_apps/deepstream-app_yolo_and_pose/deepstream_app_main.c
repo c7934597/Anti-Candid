@@ -100,7 +100,7 @@ readConfig();
 extern void 
 send_lock_socket(char buf[], bool detection);
 
-extern int 
+extern void
 pose_meta_data(NvDsBatchMeta *batch_meta);
 
 /* pgie_src_pad_buffer_probe  will extract metadata received from pgie
@@ -116,8 +116,11 @@ pgie_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
   return GST_PAD_PROBE_OK;
 }
 
-extern int 
-object_meta_data(NvDsBatchMeta *batch_meta);
+extern void
+object_meta_data0(NvDsBatchMeta *batch_meta);
+
+extern void
+object_meta_data1(NvDsBatchMeta *batch_meta);
 
 /* pgie_src_pad_buffer_probe  will extract metadata received from pgie
  * and update params for drawing rectangle, object information etc. */
