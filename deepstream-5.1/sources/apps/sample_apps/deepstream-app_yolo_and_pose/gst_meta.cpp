@@ -26,6 +26,7 @@ gint frame_number = 0;
 #define CONFIG_PATH "deepstream_app_server_config.txt"
 #define SIZE 256
 
+gint ShutdownCommand = 0;
 gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint SuspiciousItemWarning = 0;
@@ -35,6 +36,8 @@ gchar lockbuf[]="LOCK";
 gint port_lock = 0;
 gint portnumber = 0;
 gchar ipaddress[SIZE];
+gint open_send_socket_count_limit = 0;
+gint send_socket_count_limit = 0;
 
 /* The muxer output resolution must be set if the input streams will be of
  * different resolution. The muxer will scale all the input frames to this
@@ -78,6 +81,12 @@ readConfig(){
       }
       else if(!strcmp(name, "pose_estimation_muxer_output_height")){
         pose_estimation_muxer_output_height = atoi(value);
+      }
+      else if(!strcmp(name, "open_send_socket_count_limit")){
+        open_send_socket_count_limit = atoi(value);
+      }
+      else if(!strcmp(name, "send_socket_count_limit")){
+        send_socket_count_limit = atoi(value);
       }
       else if(!strcmp(name, "PoseWarningLimit")){
         PoseWarningLimit = atoi(value);
@@ -198,6 +207,15 @@ send_lock_socket(char buf[], bool detection){
       PoseWarning = 0;
       PeopleWarning = 0;
       SuspiciousItemWarning = 0;
+      ShutdownCommand += 1;
+      if(open_send_socket_count_limit == 1)
+      {
+        if(ShutdownCommand == send_socket_count_limit)
+        {
+          // system("killall deepstream-app");
+          system("shutdown -h now");
+        }
+      }
     }
   }
 
@@ -288,7 +306,9 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
     // printf("Pose Warning : %d \n", PoseWarning);
   }
   else
+  {
     PoseWarning=0;
+  }
 
   if(countPeople != 1)
   {
@@ -296,12 +316,13 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
     // printf("Over People Warning : %d \n", PeopleWarning);
   }
   else
+  {
     PeopleWarning=0;
+  }
 
   if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit)
   {
     send_lock_socket(lockbuf , true);
-    // system("killall deepstream-app");
   }
 }
 
@@ -351,13 +372,14 @@ object_meta_data0(NvDsBatchMeta *batch_meta)
           // printf("Suspicious Item Warning : %d \n", SuspiciousItemWarning);
         }
         else
+        {
           SuspiciousItemWarning = 0;
+        }
     }
 
     if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
     {
       send_lock_socket(lockbuf , true);
-      // system("killall deepstream-app");
     }
     return;
 }
@@ -384,13 +406,14 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
           // printf("Suspicious Item Warning : %d \n", SuspiciousItemWarning);
         }
         else
+        {
           SuspiciousItemWarning = 0;
+        }
     }
 
     if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
     {
       send_lock_socket(lockbuf , true);
-      // system("killall deepstream-app");
     }
     return;
 }

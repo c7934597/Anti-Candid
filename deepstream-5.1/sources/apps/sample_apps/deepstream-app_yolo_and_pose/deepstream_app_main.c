@@ -83,15 +83,6 @@ GOptionEntry entries[] = {
   ,
 };
 
-#include <unistd.h>
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#define CLIENT_PORT 21567 //目標地址埠號
-#define CLIENT_IP "192.168.110.44" //目標地址IP
-
 gchar alivebuf[]="ONLINE";
 
 extern void
