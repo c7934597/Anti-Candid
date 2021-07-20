@@ -38,6 +38,7 @@ gint portnumber = 0;
 gchar ipaddress[SIZE];
 gint open_send_socket_count_limit = 0;
 gint send_socket_count_limit = 0;
+gint open_hand_lock = 0;
 
 /* The muxer output resolution must be set if the input streams will be of
  * different resolution. The muxer will scale all the input frames to this
@@ -87,6 +88,9 @@ readConfig(){
       }
       else if(!strcmp(name, "send_socket_count_limit")){
         send_socket_count_limit = atoi(value);
+      }
+      else if(!strcmp(name, "open_hand_lock")){
+        open_hand_lock = atoi(value);
       }
       else if(!strcmp(name, "PoseWarningLimit")){
         PoseWarningLimit = atoi(value);
@@ -293,9 +297,12 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1};
         dmeta->num_lines++;
       }
-      else if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
+      else if(open_hand_lock == 1)
       {
-        IsWarning = true;
+        if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
+        {
+          IsWarning = true;
+        }
       }
     }
   }
@@ -352,40 +359,6 @@ pose_meta_data(NvDsBatchMeta *batch_meta)
 
 extern "C" void
 object_meta_data0(NvDsBatchMeta *batch_meta)
-{
-    NvDsMetaList *l_frame = NULL;
-    NvDsMetaList *l_obj = NULL;
-   
-    for (l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
-        NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
-        bool IsWarning = false;
-        for (l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
-            NvDsObjectMeta *obj_meta = (NvDsObjectMeta *)l_obj->data;
-            if (obj_meta->obj_label[0] != '\0')
-            {
-              IsWarning = true;
-            }
-        }
-        if(IsWarning)
-        {
-          SuspiciousItemWarning++;
-          // printf("Suspicious Item Warning : %d \n", SuspiciousItemWarning);
-        }
-        else
-        {
-          SuspiciousItemWarning = 0;
-        }
-    }
-
-    if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
-    {
-      send_lock_socket(lockbuf , true);
-    }
-    return;
-}
-
-extern "C" void
-object_meta_data1(NvDsBatchMeta *batch_meta)
 {
     NvDsMetaList *l_frame = NULL;
     NvDsMetaList *l_obj = NULL;
