@@ -195,9 +195,13 @@ create_secondary_gie (NvDsGieConfig *configs1,
         config->list_operate_on_class_ids[i]);
   }
 
-  g_object_set (G_OBJECT (subbin->secondary_gie),
+  // g_object_set (G_OBJECT (subbin->secondary_gie),
+  //     "config-file-path", GET_FILE_PATH (config->config_file_path),
+  //     "process-mode", 2, NULL);
+
+    g_object_set (G_OBJECT (subbin->secondary_gie),
       "config-file-path", GET_FILE_PATH (config->config_file_path),
-      "process-mode", 2, NULL);
+      NULL);
 
 
   if (config->num_operate_on_class_ids !=0)
