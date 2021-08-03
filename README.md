@@ -31,14 +31,6 @@ CUDA_VER=10.2 make -C nvdsinfer_custom_impl_Yolo
 ## 4. Run
 ./deepstream-app -c deepstream_app_config.txt
 
-## 5. Object Detection & Pose_Estimation
-
-### If it use gstreamer
-python3 main.py --usb 0
-
-### If it doesn't use gstreamer
-python3 main.py --usb 0 -g 
-
 
 # References
 https://spyjetson.blogspot.com/
