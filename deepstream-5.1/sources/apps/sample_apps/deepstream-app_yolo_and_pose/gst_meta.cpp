@@ -26,7 +26,6 @@ gint frame_number = 0;
 #define CONFIG_PATH "deepstream_app_server_config.txt"
 #define SIZE 256
 
-gint ShutdownCommand = 0;
 gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint SuspiciousItemWarning = 0;
@@ -36,8 +35,6 @@ gchar lockbuf[]="LOCK";
 gint port_lock = 0;
 gint portnumber = 0;
 gchar ipaddress[SIZE];
-gint open_send_socket_count_limit = 0;
-gint send_socket_count_limit = 0;
 gint open_hand_lock = 0;
 
 /* The muxer output resolution must be set if the input streams will be of
@@ -82,12 +79,6 @@ readConfig(){
       }
       else if(!strcmp(name, "pose_estimation_muxer_output_height")){
         pose_estimation_muxer_output_height = atoi(value);
-      }
-      else if(!strcmp(name, "open_send_socket_count_limit")){
-        open_send_socket_count_limit = atoi(value);
-      }
-      else if(!strcmp(name, "send_socket_count_limit")){
-        send_socket_count_limit = atoi(value);
       }
       else if(!strcmp(name, "open_hand_lock")){
         open_hand_lock = atoi(value);
@@ -211,15 +202,6 @@ send_lock_socket(char buf[], bool detection){
       PoseWarning = 0;
       PeopleWarning = 0;
       SuspiciousItemWarning = 0;
-      ShutdownCommand += 1;
-      if(open_send_socket_count_limit == 1)
-      {
-        if(ShutdownCommand == send_socket_count_limit)
-        {
-          // system("killall deepstream-app");
-          system("shutdown -h now");
-        }
-      }
     }
   }
 
