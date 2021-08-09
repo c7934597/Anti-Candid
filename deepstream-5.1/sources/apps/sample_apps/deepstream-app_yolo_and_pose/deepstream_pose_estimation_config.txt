@@ -27,7 +27,7 @@ output-tensor-meta=1
 batch-size=1
 process-mode=1
 
-interval=27
+interval=25
 gie-unique-id=1
 
 workspace-size=3000
