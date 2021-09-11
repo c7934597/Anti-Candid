@@ -7,5 +7,5 @@ open_send_socket_count_limit = 1
 send_socket_count_limit = 1800
 open_hand_lock = 0
 PoseWarningLimit = 1
-PeopleWarningLimit = 2
+PeopleWarningLimit = 4
 SuspiciousItemWarningLimit = 1
