@@ -224,7 +224,8 @@ perf_cb (gpointer context, NvDsAppPerfStruct * str)
   g_print ("\n");
   g_mutex_unlock (&fps_lock);
 
-  send_lock_socket(alivebuf , false);
+  if (fps[0] != 0.00)
+    send_lock_socket(alivebuf , false);
 }
 
 /**
