@@ -29,6 +29,7 @@ gint frame_number = 0;
 gint ShutdownCommand = 0;
 gint PoseWarning = 0;
 gint PeopleWarning = 0;
+gint NobodyWarning = 0;
 gint SuspiciousItemWarning = 0;
 gchar lockbuf[]="LOCK";
 
@@ -48,6 +49,7 @@ gint pose_estimation_muxer_output_height = 0;
 
 gint PoseWarningLimit = 15;
 gint PeopleWarningLimit = 30;
+gint NobodyWarningLimit = 15;
 gint SuspiciousItemWarningLimit = 15;
 
 extern "C" void
@@ -97,6 +99,9 @@ readConfig(){
       }
       else if(!strcmp(name, "PeopleWarningLimit")){
         PeopleWarningLimit = atoi(value);
+      }
+      else if(!strcmp(name, "NobodyWarningLimit")){
+        NobodyWarningLimit = atoi(value);
       }
       else if(!strcmp(name, "SuspiciousItemWarningLimit")){
         SuspiciousItemWarningLimit = atoi(value);
@@ -210,6 +215,7 @@ send_lock_socket(char buf[], bool detection){
     if(detection){
       PoseWarning = 0;
       PeopleWarning = 0;
+      NobodyWarning = 0;
       SuspiciousItemWarning = 0;
       ShutdownCommand += 1;
       if(open_send_socket_count_limit == 1)
@@ -317,17 +323,25 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
     PoseWarning=0;
   }
 
-  if(countPeople != 1)
+  if(countPeople > 1)
   {
+    NobodyWarning=0;
     PeopleWarning++;
     // printf("Over People Warning : %d \n", PeopleWarning);
+  }
+  else if(countPeople == 0)
+  {
+    PeopleWarning=0;
+    NobodyWarning++;
+    // printf("Nobody Warning : %d \n", NobodyWarning);
   }
   else
   {
     PeopleWarning=0;
+    NobodyWarning=0;
   }
 
-  if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit)
+  if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit || NobodyWarning == NobodyWarningLimit)
   {
     send_lock_socket(lockbuf , true);
   }
