@@ -48,6 +48,10 @@ gint pose_estimation_muxer_output_width = 0;
 gint pose_estimation_muxer_output_height = 0;
 
 gint PoseWarningLimit = 15;
+gint LeftArmMin = 45;
+gint LeftArmMax = 145;
+gint RightArmMin = 45;
+gint RightArmMax = 145;
 gint PeopleWarningLimit = 30;
 gint NobodyWarningLimit = 15;
 gint SuspiciousItemWarningLimit = 15;
@@ -96,6 +100,18 @@ readConfig(){
       }
       else if(!strcmp(name, "PoseWarningLimit")){
         PoseWarningLimit = atoi(value);
+      }
+      else if(!strcmp(name, "LeftArmMin")){
+        LeftArmMin = atoi(value);
+      }
+      else if(!strcmp(name, "LeftArmMax")){
+        LeftArmMax = atoi(value);
+      }
+      else if(!strcmp(name, "RightArmMin")){
+        RightArmMin = atoi(value);
+      }
+      else if(!strcmp(name, "RightArmMax")){
+        RightArmMax = atoi(value);
       }
       else if(!strcmp(name, "PeopleWarningLimit")){
         PeopleWarningLimit = atoi(value);
@@ -157,7 +173,6 @@ float get_angle(float a0, float a1, float b0, float b1)
     if (del_x == 0)
       del_x = 0.1;
     float angle = 0;
-
     if (del_x > 0 && del_y > 0)
       angle = convert_radian_to_degrees(atan(del_y / del_x));
     if (del_x < 0 && del_y > 0)
@@ -278,10 +293,18 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
       {
         auto &peak0 = normalized_peaks[c_a][object[c_a]];
         auto &peak1 = normalized_peaks[c_b][object[c_b]];
-        if (k == 7 || k ==8)
+        if (k == 7)
         {
           float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
-          if (angle > 0)
+          // printf("left arm angle %f\n", angle);
+          if (LeftArmMin < angle and angle < LeftArmMax)
+            IsWarning = true;
+        }
+        if (k ==8)
+        {
+          float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
+          // printf("right arm angle %f\n", angle);
+          if (RightArmMin < angle and angle < RightArmMax)
             IsWarning = true;
         }
         int x0 = peak0[1] * pose_estimation_muxer_output_width;
