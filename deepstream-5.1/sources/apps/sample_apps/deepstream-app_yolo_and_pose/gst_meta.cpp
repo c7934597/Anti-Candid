@@ -408,6 +408,9 @@ object_meta_data0(NvDsBatchMeta *batch_meta)
             if (obj_meta->obj_label[0] != '\0')
             {
               IsWarning = true;
+              // if(!strcmp(obj_meta->obj_label,"SuspiciousItem"))
+              // {
+              // }
             }
         }
         if(IsWarning)
