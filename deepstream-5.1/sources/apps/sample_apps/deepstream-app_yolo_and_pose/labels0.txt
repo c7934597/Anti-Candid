@@ -1,2 +1,3 @@
-SuspiciousItem
+mouse
+keyboard
 SuspiciousItem
