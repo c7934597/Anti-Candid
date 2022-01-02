@@ -83,6 +83,22 @@ GOptionEntry entries[] = {
   ,
 };
 
+extern void
+object_meta_data1(NvDsBatchMeta *batch_meta);
+
+/* pgie_src_pad_buffer_probe  will extract metadata received from pgie
+ * and update params for drawing rectangle, object information etc. */
+static GstPadProbeReturn
+pgie_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
+{
+  //gchar *msg = NULL;
+  GstBuffer *buf = (GstBuffer *)info->data;
+  NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
+
+  object_meta_data1(batch_meta);
+  return GST_PAD_PROBE_OK;
+}
+
 /**
  * Callback function to be called once all inferences (Primary + Secondary)
  * are done. This is opportunity to modify content of the metadata.
@@ -100,35 +116,32 @@ all_bbox_generated (AppCtx * appCtx, GstBuffer * buf,
 
   memset (num_objects, 0, sizeof (num_objects));
 
-  for (NvDsMetaList * l_frame = batch_meta->frame_meta_list; l_frame != NULL;l_frame = l_frame->next) {
-
+  for (NvDsMetaList * l_frame = batch_meta->frame_meta_list; l_frame != NULL;
+      l_frame = l_frame->next) {
     NvDsFrameMeta *frame_meta = l_frame->data;
-
-    for (NvDsMetaList * l_obj = frame_meta->obj_meta_list; l_obj != NULL;l_obj = l_obj->next) {
-
+    for (NvDsMetaList * l_obj = frame_meta->obj_meta_list; l_obj != NULL;
+        l_obj = l_obj->next) {
       NvDsObjectMeta *obj = (NvDsObjectMeta *) l_obj->data;
-
-      if (obj->unique_component_id == (gint) appCtx->config.primary_gie_config.unique_id) {
-        // if (obj->class_id >= 0 && obj->class_id < 128) {
-        //   num_objects[obj->class_id]++;
-        // }
-        // if (appCtx->person_class_id > -1 && obj->class_id == appCtx->person_class_id) {
-        //   if (strstr (obj->text_params.display_text, "Man")) {
-        //     str_replace (obj->text_params.display_text, "Man", "");
-        //     str_replace (obj->text_params.display_text, "Person", "Man");
-        //     num_male++;
-        //   } else if (strstr (obj->text_params.display_text, "Woman")) {
-        //     str_replace (obj->text_params.display_text, "Woman", "");
-        //     str_replace (obj->text_params.display_text, "Person", "Woman");
-        //     num_female++;
-        //   }
-        // }
+      if (obj->unique_component_id ==
+          (gint) appCtx->config.primary_gie_config.unique_id) {
+        if (obj->class_id >= 0 && obj->class_id < 128) {
+          num_objects[obj->class_id]++;
+        }
+        if (appCtx->person_class_id > -1
+            && obj->class_id == appCtx->person_class_id) {
+          if (strstr (obj->text_params.display_text, "Man")) {
+            str_replace (obj->text_params.display_text, "Man", "");
+            str_replace (obj->text_params.display_text, "Person", "Man");
+            num_male++;
+          } else if (strstr (obj->text_params.display_text, "Woman")) {
+            str_replace (obj->text_params.display_text, "Woman", "");
+            str_replace (obj->text_params.display_text, "Person", "Woman");
+            num_female++;
+          }
+        }
       }
-
     }
-
   }
-
 }
 
 /**
@@ -643,6 +656,22 @@ main (int argc, char *argv[])
       return_value = -1;
       goto done;
     }
+
+    // obejct detection
+    if (appCtx[i]->config.primary_gie_config.enable) {
+        GstPad *src_pad1 = NULL;
+        GstElement *src_element1 = appCtx[i]->pipeline.common_elements.primary_gie_bin.primary_gie;
+        src_pad1 = gst_element_get_static_pad (src_element1, "src");
+        if (!src_pad1)
+            g_print ("Unable to get primary_gie src pad\n");
+        else
+        {
+            gst_pad_add_probe(src_pad1, GST_PAD_PROBE_TYPE_BUFFER,
+                      pgie_src_pad_buffer_probe, NULL, NULL);
+            gst_object_unref (src_pad1);
+        }
+    }
+
   }
 
   main_loop = g_main_loop_new (NULL, FALSE);

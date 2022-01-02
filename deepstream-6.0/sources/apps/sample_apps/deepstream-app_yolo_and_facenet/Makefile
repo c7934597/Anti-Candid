@@ -27,6 +27,8 @@ endif
 
 APP:= deepstream-app
 
+CXX=g++
+
 TARGET_DEVICE = $(shell gcc -dumpmachine | cut -f1 -d -)
 
 NVDS_VERSION:=6.0
@@ -46,6 +48,7 @@ INCS:= $(wildcard *.h)
 PKGS:= gstreamer-1.0 gstreamer-video-1.0 x11 json-glib-1.0
 
 OBJS:= $(SRCS:.c=.o)
+OBJS+= gst_meta.o
 
 CFLAGS+= -I./ -I../../apps-common/includes \
 		 -I../../../includes -DDS_VERSION_MINOR=1 -DDS_VERSION_MAJOR=5 \
@@ -66,8 +69,11 @@ all: $(APP)
 %.o: %.c $(INCS) Makefile
 	$(CC) -c -o $@ $(CFLAGS) $<
 
+gst_meta.o: gst_meta.cpp $(INCS) Makefile
+	$(CXX) -c -o $@ -Wall -Werror $(CFLAGS) $<
+
 $(APP): $(OBJS) Makefile
-	$(CC) -o $(APP) $(OBJS) $(LIBS)
+	$(CXX) -o $(APP) $(OBJS) $(LIBS)
 
 install: $(APP)
 	cp -rv $(APP) $(APP_INSTALL_DIR)
