@@ -99,6 +99,22 @@ pgie_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
   return GST_PAD_PROBE_OK;
 }
 
+extern void
+object_meta_data2(NvDsBatchMeta *batch_meta);
+
+/* sgie_src_pad_buffer_probe  will extract metadata received from sgie
+ * and update params for drawing rectangle, object information etc. */
+static GstPadProbeReturn
+sgie0_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
+{
+  //gchar *msg = NULL;
+  GstBuffer *buf = (GstBuffer *)info->data;
+  NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
+
+  object_meta_data2(batch_meta);
+  return GST_PAD_PROBE_OK;
+}
+
 /**
  * Callback function to be called once all inferences (Primary + Secondary)
  * are done. This is opportunity to modify content of the metadata.
@@ -657,7 +673,7 @@ main (int argc, char *argv[])
       goto done;
     }
 
-    // obejct detection
+    // face detection
     if (appCtx[i]->config.primary_gie_config.enable) {
         GstPad *src_pad1 = NULL;
         GstElement *src_element1 = appCtx[i]->pipeline.common_elements.primary_gie_bin.primary_gie;
@@ -669,6 +685,21 @@ main (int argc, char *argv[])
             gst_pad_add_probe(src_pad1, GST_PAD_PROBE_TYPE_BUFFER,
                       pgie_src_pad_buffer_probe, NULL, NULL);
             gst_object_unref (src_pad1);
+        }
+    }
+
+    // face recognition
+    if (appCtx[i]->config.secondary_gie_sub_bin_config[0].enable) {
+        GstPad *src_pad2 = NULL;
+        GstElement *src_element2 = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[0].secondary_gie;
+        src_pad2 = gst_element_get_static_pad (src_element2, "src");
+        if (!src_pad2)
+            g_print ("Unable to get secondary_gie0 src pad\n");
+        else
+        {
+            gst_pad_add_probe(src_pad2, GST_PAD_PROBE_TYPE_BUFFER,
+                      sgie0_src_pad_buffer_probe, NULL, NULL);
+            gst_object_unref (src_pad2);
         }
     }
 
