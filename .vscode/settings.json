@@ -12,6 +12,7 @@
     "python.testing.unittestEnabled": false,
     "python.testing.promptToConfigure": false,
     "files.associations": {
-        "vector": "cpp"
+        "vector": "cpp",
+        "ostream": "cpp"
     }
 }
