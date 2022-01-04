@@ -88,7 +88,7 @@ object_meta_data2(NvDsBatchMeta *batch_meta)
 
                 /* convert to tensor metadata */
                 NvDsInferTensorMeta *meta = (NvDsInferTensorMeta *) user_meta->user_meta_data;
-                g_printf("Num output layers  : %d \n", meta->num_output_layers);
+                g_print("Num output layers  : %d \n", meta->num_output_layers);
                 for (unsigned int i = 0; i < meta->num_output_layers; i++) {
                     NvDsInferLayerInfo *info = &meta->output_layers_info[i];
 
@@ -143,7 +143,7 @@ object_meta_data2(NvDsBatchMeta *batch_meta)
                     -0.372314};
                     float printdot = dotProduct(embeddings_detection.data(), testdata);
                     g_print("Dot Product : %f \n", printdot);
-                    if (printdot > 90) {
+                    if (printdot > 60) {
                         g_print("[INFO] Detected: %s\n", "Ming");
                     } else {
                         g_print("[INFO] Detected: %s\n", "not Ming");
