@@ -60,8 +60,7 @@
 [property]
 gpu-id=0
 net-scale-factor=0.0093215686274
-onnx-file=/opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/deepstream-app_yolo_and_facenet/facenet_onnx.onnx
-model-engine-file=facenet_onnx.onnx_b1_gpu0_fp16.engine
+model-engine-file=model/facenet/tensorrtmodel/facenet_onnx.onnx_b1_gpu0_fp16.engine
 
 # 0=RGB, 1=BGR
 model-color-format=0
