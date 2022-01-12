@@ -6,7 +6,7 @@ custom-network-config=yolov4-tiny-224.cfg
 model-file=yolov4-tiny-224.weights
 model-engine-file=model_b1_gpu0_fp16.engine
 labelfile-path=labels0.txt
-num-detected-classes=1
+num-detected-classes=3
 
 # 0=RGB, 1=BGR
 model-color-format=0
