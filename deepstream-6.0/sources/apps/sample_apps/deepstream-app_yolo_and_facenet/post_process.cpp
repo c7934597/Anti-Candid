@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 #include "gstnvdsmeta.h"
-// #include "gstnvdsinfer.h"
+#include "gstnvdsinfer.h"
 #include "nvdsgstutils.h"
 #include "nvbufsurface.h"
 

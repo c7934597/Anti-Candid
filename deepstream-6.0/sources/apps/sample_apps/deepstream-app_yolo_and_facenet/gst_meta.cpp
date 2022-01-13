@@ -1,4 +1,4 @@
-// #include "post_process.cpp"
+#include "post_process.cpp"
 
 #include <glib.h>
 #include "json.hpp"
@@ -24,10 +24,10 @@ using Vec3D = std::vector<Vec2D<T>>;
 
 gint frame_number = 0;
 
-#include "gstnvdsmeta.h"
-#include "gstnvdsinfer.h"
+// #include "gstnvdsmeta.h"
+// #include "gstnvdsinfer.h"
 #include "nvdsinfer_custom_impl.h"
-#include "nvds_version.h"
+// #include "nvds_version.h"
 
 #include <unistd.h>
 #include <sys/types.h> 
@@ -141,37 +141,37 @@ readConfig(){
   return;
 }
 
-// /*Method to parse information returned from the model*/
-// std::tuple<Vec2D<int>, Vec3D<float>>
-// parse_objects_from_tensor_meta(NvDsInferTensorMeta *tensor_meta)
-// {
-//   Vec1D<int> counts;
-//   Vec3D<int> peaks;
+/*Method to parse information returned from the model*/
+std::tuple<Vec2D<int>, Vec3D<float>>
+parse_objects_from_tensor_meta(NvDsInferTensorMeta *tensor_meta)
+{
+  Vec1D<int> counts;
+  Vec3D<int> peaks;
 
-//   float threshold = 0.1;
-//   int window_size = 5;
-//   int max_num_parts = 20;
-//   int num_integral_samples = 7;
-//   float link_threshold = 0.1;
-//   int max_num_objects = 100;
+  float threshold = 0.1;
+  int window_size = 5;
+  int max_num_parts = 20;
+  int num_integral_samples = 7;
+  float link_threshold = 0.1;
+  int max_num_objects = 100;
 
-//   void *cmap_data = tensor_meta->out_buf_ptrs_host[0];
-//   NvDsInferDims &cmap_dims = tensor_meta->output_layers_info[0].inferDims;
-//   void *paf_data = tensor_meta->out_buf_ptrs_host[1];
-//   NvDsInferDims &paf_dims = tensor_meta->output_layers_info[1].inferDims;
+  void *cmap_data = tensor_meta->out_buf_ptrs_host[0];
+  NvDsInferDims &cmap_dims = tensor_meta->output_layers_info[0].inferDims;
+  void *paf_data = tensor_meta->out_buf_ptrs_host[1];
+  NvDsInferDims &paf_dims = tensor_meta->output_layers_info[1].inferDims;
 
-//   /* Finding peaks within a given window */
-//   find_peaks(counts, peaks, cmap_data, cmap_dims, threshold, window_size, max_num_parts);
-//   /* Non-Maximum Suppression */
-//   Vec3D<float> refined_peaks = refine_peaks(counts, peaks, cmap_data, cmap_dims, window_size);
-//   /* Create a Bipartite graph to assign detected body-parts to a unique person in the frame */
-//   Vec3D<float> score_graph = paf_score_graph(paf_data, paf_dims, topology, counts, refined_peaks, num_integral_samples);
-//   /* Assign weights to all edges in the bipartite graph generated */
-//   Vec3D<int> connections = assignment(score_graph, topology, counts, link_threshold, max_num_parts);
-//   /* Connecting all the Body Parts and Forming a Human Skeleton */
-//   Vec2D<int> objects = connect_parts(connections, topology, counts, max_num_objects);
-//   return {objects, refined_peaks};
-// }
+  /* Finding peaks within a given window */
+  find_peaks(counts, peaks, cmap_data, cmap_dims, threshold, window_size, max_num_parts);
+  /* Non-Maximum Suppression */
+  Vec3D<float> refined_peaks = refine_peaks(counts, peaks, cmap_data, cmap_dims, window_size);
+  /* Create a Bipartite graph to assign detected body-parts to a unique person in the frame */
+  Vec3D<float> score_graph = paf_score_graph(paf_data, paf_dims, topology, counts, refined_peaks, num_integral_samples);
+  /* Assign weights to all edges in the bipartite graph generated */
+  Vec3D<int> connections = assignment(score_graph, topology, counts, link_threshold, max_num_parts);
+  /* Connecting all the Body Parts and Forming a Human Skeleton */
+  Vec2D<int> objects = connect_parts(connections, topology, counts, max_num_objects);
+  return {objects, refined_peaks};
+}
 
 float convert_radian_to_degrees(float radian){ 
     float pi = 3.14159; 
@@ -260,127 +260,127 @@ send_lock_socket(char buf[], bool detection){
   return;
 }
 
-// /* MetaData to handle drawing onto the on-screen-display */
-// static void
-// create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFrameMeta *frame_meta, int frame_width, int frame_height)
-// {
-//   int K = topology.size();
-//   int countPeople = objects.size();
-//   NvDsBatchMeta *bmeta = frame_meta->base_meta.batch_meta;
-//   NvDsDisplayMeta *dmeta = nvds_acquire_display_meta_from_pool(bmeta);
-//   nvds_add_display_meta_to_frame(frame_meta, dmeta);
+/* MetaData to handle drawing onto the on-screen-display */
+static void
+create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFrameMeta *frame_meta, int frame_width, int frame_height)
+{
+  int K = topology.size();
+  int countPeople = objects.size();
+  NvDsBatchMeta *bmeta = frame_meta->base_meta.batch_meta;
+  NvDsDisplayMeta *dmeta = nvds_acquire_display_meta_from_pool(bmeta);
+  nvds_add_display_meta_to_frame(frame_meta, dmeta);
 
-//   bool IsWarning = false;
-//   for (auto &object : objects)
-//   {
-//     int C = object.size();
-//     for (int j = 0; j < C; j++)
-//     {
-//       int k = object[j];
-//       if (k >= 0)
-//       {
-//         auto &peak = normalized_peaks[j][k];
-//         int x = peak[1] * pose_estimation_muxer_output_width;
-//         int y = peak[0] * pose_estimation_muxer_output_height;
-//         if (dmeta->num_circles == MAX_ELEMENTS_IN_DISPLAY_META)
-//         {
-//           dmeta = nvds_acquire_display_meta_from_pool(bmeta);
-//           nvds_add_display_meta_to_frame(frame_meta, dmeta);
-//         }
-//         NvOSD_CircleParams &cparams = dmeta->circle_params[dmeta->num_circles];
-//         cparams.xc = x;
-//         cparams.yc = y;
-//         cparams.radius = 6;
-//         cparams.circle_color = NvOSD_ColorParams{244, 67, 54, 1};
-//         cparams.has_bg_color = 1;
-//         cparams.bg_color = NvOSD_ColorParams{0, 255, 0, 1};
-//         dmeta->num_circles++;
-//       }
-//     }
-//     for (int k = 0; k < K; k++)
-//     {
-//       int c_a = topology[k][2];
-//       int c_b = topology[k][3];
-//       if (object[c_a] >= 0 && object[c_b] >= 0)
-//       {
-//         auto &peak0 = normalized_peaks[c_a][object[c_a]];
-//         auto &peak1 = normalized_peaks[c_b][object[c_b]];
-//         if (k == 7)
-//         {
-//           float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
-//           // printf("left arm angle %f\n", angle);
-//           if (LeftArmMin < angle and angle < LeftArmMax)
-//             IsWarning = true;
-//         }
-//         if (k ==8)
-//         {
-//           float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
-//           // printf("right arm angle %f\n", angle);
-//           if (RightArmMin < angle and angle < RightArmMax)
-//             IsWarning = true;
-//         }
-//         int x0 = peak0[1] * pose_estimation_muxer_output_width;
-//         int y0 = peak0[0] * pose_estimation_muxer_output_height;
-//         int x1 = peak1[1] * pose_estimation_muxer_output_width;
-//         int y1 = peak1[0] * pose_estimation_muxer_output_height;
-//         if (dmeta->num_lines == MAX_ELEMENTS_IN_DISPLAY_META)
-//         {
-//           dmeta = nvds_acquire_display_meta_from_pool(bmeta);
-//           nvds_add_display_meta_to_frame(frame_meta, dmeta);
-//         }
-//         NvOSD_LineParams &lparams = dmeta->line_params[dmeta->num_lines];
-//         lparams.x1 = x0;
-//         lparams.x2 = x1;
-//         lparams.y1 = y0;
-//         lparams.y2 = y1;
-//         lparams.line_width = 3;
-//         //g_print("%d\n",k);
-//         lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1};
-//         dmeta->num_lines++;
-//       }
-//       else if(open_hand_lock == 1)
-//       {
-//         if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
-//         {
-//           IsWarning = true;
-//         }
-//       }
-//     }
-//   }
+  bool IsWarning = false;
+  for (auto &object : objects)
+  {
+    int C = object.size();
+    for (int j = 0; j < C; j++)
+    {
+      int k = object[j];
+      if (k >= 0)
+      {
+        auto &peak = normalized_peaks[j][k];
+        int x = peak[1] * pose_estimation_muxer_output_width;
+        int y = peak[0] * pose_estimation_muxer_output_height;
+        if (dmeta->num_circles == MAX_ELEMENTS_IN_DISPLAY_META)
+        {
+          dmeta = nvds_acquire_display_meta_from_pool(bmeta);
+          nvds_add_display_meta_to_frame(frame_meta, dmeta);
+        }
+        NvOSD_CircleParams &cparams = dmeta->circle_params[dmeta->num_circles];
+        cparams.xc = x;
+        cparams.yc = y;
+        cparams.radius = 6;
+        cparams.circle_color = NvOSD_ColorParams{244, 67, 54, 1};
+        cparams.has_bg_color = 1;
+        cparams.bg_color = NvOSD_ColorParams{0, 255, 0, 1};
+        dmeta->num_circles++;
+      }
+    }
+    for (int k = 0; k < K; k++)
+    {
+      int c_a = topology[k][2];
+      int c_b = topology[k][3];
+      if (object[c_a] >= 0 && object[c_b] >= 0)
+      {
+        auto &peak0 = normalized_peaks[c_a][object[c_a]];
+        auto &peak1 = normalized_peaks[c_b][object[c_b]];
+        if (k == 7)
+        {
+          float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
+          // printf("left arm angle %f\n", angle);
+          if (LeftArmMin < angle and angle < LeftArmMax)
+            IsWarning = true;
+        }
+        if (k ==8)
+        {
+          float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
+          // printf("right arm angle %f\n", angle);
+          if (RightArmMin < angle and angle < RightArmMax)
+            IsWarning = true;
+        }
+        int x0 = peak0[1] * pose_estimation_muxer_output_width;
+        int y0 = peak0[0] * pose_estimation_muxer_output_height;
+        int x1 = peak1[1] * pose_estimation_muxer_output_width;
+        int y1 = peak1[0] * pose_estimation_muxer_output_height;
+        if (dmeta->num_lines == MAX_ELEMENTS_IN_DISPLAY_META)
+        {
+          dmeta = nvds_acquire_display_meta_from_pool(bmeta);
+          nvds_add_display_meta_to_frame(frame_meta, dmeta);
+        }
+        NvOSD_LineParams &lparams = dmeta->line_params[dmeta->num_lines];
+        lparams.x1 = x0;
+        lparams.x2 = x1;
+        lparams.y1 = y0;
+        lparams.y2 = y1;
+        lparams.line_width = 3;
+        //g_print("%d\n",k);
+        lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1};
+        dmeta->num_lines++;
+      }
+      else if(open_hand_lock == 1)
+      {
+        if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
+        {
+          IsWarning = true;
+        }
+      }
+    }
+  }
 
-//   if(IsWarning)
-//   {
-//     PoseWarning++;
-//     // printf("Pose Warning : %d \n", PoseWarning);
-//   }
-//   else
-//   {
-//     PoseWarning=0;
-//   }
+  if(IsWarning)
+  {
+    PoseWarning++;
+    // printf("Pose Warning : %d \n", PoseWarning);
+  }
+  else
+  {
+    PoseWarning=0;
+  }
 
-//   if(countPeople > 1)
-//   {
-//     NobodyWarning=0;
-//     PeopleWarning++;
-//     // printf("Over People Warning : %d \n", PeopleWarning);
-//   }
-//   else if(countPeople == 0)
-//   {
-//     PeopleWarning=0;
-//     NobodyWarning++;
-//     // printf("Nobody Warning : %d \n", NobodyWarning);
-//   }
-//   else
-//   {
-//     PeopleWarning=0;
-//     NobodyWarning=0;
-//   }
+  if(countPeople > 1)
+  {
+    NobodyWarning=0;
+    PeopleWarning++;
+    // printf("Over People Warning : %d \n", PeopleWarning);
+  }
+  else if(countPeople == 0)
+  {
+    PeopleWarning=0;
+    NobodyWarning++;
+    // printf("Nobody Warning : %d \n", NobodyWarning);
+  }
+  else
+  {
+    PeopleWarning=0;
+    NobodyWarning=0;
+  }
 
-//   if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit || NobodyWarning == NobodyWarningLimit)
-//   {
-//     send_lock_socket(lockbuf , true);
-//   }
-// }
+  if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit || NobodyWarning == NobodyWarningLimit)
+  {
+    send_lock_socket(lockbuf , true);
+  }
+}
 
 // Function that return
 // dot product of two vector array.
@@ -555,23 +555,46 @@ object_meta_data2(NvDsBatchMeta *batch_meta)
 extern "C" void
 pose_meta_data(NvDsBatchMeta *batch_meta)
 {
-    NvDsMetaList *l_frame = NULL;
-    NvDsMetaList *l_user = NULL;
-   
-    for (l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
+    for ( NvDsMetaList *l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
         NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
-        for (l_user = frame_meta->frame_user_meta_list; l_user != NULL; l_user = l_user->next) {
+        for (NvDsMetaList *l_user = frame_meta->frame_user_meta_list; l_user != NULL; l_user = l_user->next) {
             NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user->data;
             if (user_meta->base_meta.meta_type == NVDSINFER_TENSOR_OUTPUT_META)
             {
-                // NvDsInferTensorMeta *tensor_meta =
-                //     (NvDsInferTensorMeta *)user_meta->user_meta_data;
-                // Vec2D<int> objects;
-                // Vec3D<float> normalized_peaks;
-                // tie(objects, normalized_peaks) = parse_objects_from_tensor_meta(tensor_meta);
-                // create_display_meta(objects, normalized_peaks, frame_meta, frame_meta->source_frame_width, frame_meta->source_frame_height);
+                NvDsInferTensorMeta *tensor_meta =
+                    (NvDsInferTensorMeta *)user_meta->user_meta_data;
+                Vec2D<int> objects;
+                Vec3D<float> normalized_peaks;
+                tie(objects, normalized_peaks) = parse_objects_from_tensor_meta(tensor_meta);
+                create_display_meta(objects, normalized_peaks, frame_meta, frame_meta->source_frame_width, frame_meta->source_frame_height);
             }
         }
     }
+
+
+    // for (NvDsMetaList *l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
+    //     NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
+
+    //     /* Iterate object metadata in frame */
+    //     for (NvDsMetaList *l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
+    //         NvDsObjectMeta *obj_meta = (NvDsObjectMeta *) l_obj->data;
+
+    //         /* Iterate user metadata in object to search SGIE's tensor data */
+    //         for (NvDsMetaList * l_user = obj_meta->obj_user_meta_list; l_user != NULL;
+    //         l_user = l_user->next) {
+    //           NvDsUserMeta *user_meta = (NvDsUserMeta *) l_user->data;
+    //           if (user_meta->base_meta.meta_type == NVDSINFER_TENSOR_OUTPUT_META)
+    //           {
+    //             NvDsInferTensorMeta *tensor_meta =
+    //             (NvDsInferTensorMeta *)user_meta->user_meta_data;
+    //             Vec2D<int> objects;
+    //             Vec3D<float> normalized_peaks;
+    //             tie(objects, normalized_peaks) = parse_objects_from_tensor_meta(tensor_meta);
+    //             create_display_meta(objects, normalized_peaks, frame_meta, frame_meta->source_frame_width, frame_meta->source_frame_height);
+    //           }
+    //         }
+    //     }
+    // }
+
     return;
 }
