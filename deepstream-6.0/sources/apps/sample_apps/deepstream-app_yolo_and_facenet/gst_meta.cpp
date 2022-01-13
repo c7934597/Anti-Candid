@@ -122,49 +122,59 @@ object_meta_data2(NvDsBatchMeta *batch_meta)
         NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
 
         /* Iterate object metadata in frame */
-        for (NvDsMetaList * l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
+        for (NvDsMetaList *l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
             NvDsObjectMeta *obj_meta = (NvDsObjectMeta *) l_obj->data;
 
-            /* Iterate user metadata in object to search SGIE's tensor data */
-            for (NvDsMetaList * l_user = obj_meta->obj_user_meta_list; l_user != NULL;
-                l_user = l_user->next) {
-                NvDsUserMeta *user_meta = (NvDsUserMeta *) l_user->data;
-                if (user_meta->base_meta.meta_type != NVDSINFER_TENSOR_OUTPUT_META){
-                    continue;
+            if (obj_meta->obj_label[0] != '\0')
+            {
+                if(!strcmp(obj_meta->obj_label,"face"))
+                {
+                    /* Iterate user metadata in object to search SGIE's tensor data */
+                    for (NvDsMetaList * l_user = obj_meta->obj_user_meta_list; l_user != NULL;
+                        l_user = l_user->next) {
+                        NvDsUserMeta *user_meta = (NvDsUserMeta *) l_user->data;
+                        if (user_meta->base_meta.meta_type != NVDSINFER_TENSOR_OUTPUT_META){
+                            continue;
+                        }
+
+                        /* convert to tensor metadata */
+                        NvDsInferTensorMeta *meta = (NvDsInferTensorMeta *) user_meta->user_meta_data;
+                        // g_print("Num output layers  : %d \n", meta->num_output_layers);
+                        for (unsigned int i = 0; i < meta->num_output_layers; i++) {
+                            NvDsInferLayerInfo *info = &meta->output_layers_info[i];
+
+                            info->buffer = meta->out_buf_ptrs_host[i];
+                            float (*array)[128] = (float (*)[128]) info->buffer;
+                            std::vector<float> embeddings_detection;
+
+                            // g_print("Shape  : %d \n", info->inferDims.numElements);
+                            // g_print("128d Tensor [ ");
+                            for (unsigned int k = 0; k < info->inferDims.numElements; k++) {
+                                // g_print("%f, ", (*array)[k]);
+                                embeddings_detection.insert(embeddings_detection.end(), (*array)[k]);
+                            }
+                            // g_print("] \n");
+
+                            float printdot = dotProduct(embeddings_detection.data(), embeddings_base.data());
+                            g_print("Dot Product : %f \n", printdot);
+                            if (printdot > 60) {
+                                g_print("[INFO] Detected: %s\n", "Ming");
+                            } else {
+                                g_print("[INFO] Detected: %s\n", "not Ming");
+                            }
+
+                            if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
+                                cudaMemcpy (meta->out_buf_ptrs_host[i], meta->out_buf_ptrs_dev[i], 
+                                info->inferDims.numElements * 4, cudaMemcpyDeviceToHost);
+                            }
+                        }
+
+                    }
                 }
-
-                /* convert to tensor metadata */
-                NvDsInferTensorMeta *meta = (NvDsInferTensorMeta *) user_meta->user_meta_data;
-                // g_print("Num output layers  : %d \n", meta->num_output_layers);
-                for (unsigned int i = 0; i < meta->num_output_layers; i++) {
-                    NvDsInferLayerInfo *info = &meta->output_layers_info[i];
-
-                    info->buffer = meta->out_buf_ptrs_host[i];
-                    float (*array)[128] = (float (*)[128]) info->buffer;
-                    std::vector<float> embeddings_detection;
-
-                    // g_print("Shape  : %d \n", info->inferDims.numElements);
-                    // g_print("128d Tensor [ ");
-                    for (unsigned int k = 0; k < info->inferDims.numElements; k++) {
-                        // g_print("%f, ", (*array)[k]);
-                        embeddings_detection.insert(embeddings_detection.end(), (*array)[k]);
-                    }
-                    // g_print("] \n");
-
-                    float printdot = dotProduct(embeddings_detection.data(), embeddings_base.data());
-                    g_print("Dot Product : %f \n", printdot);
-                    if (printdot > 60) {
-                        g_print("[INFO] Detected: %s\n", "Ming");
-                    } else {
-                        g_print("[INFO] Detected: %s\n", "not Ming");
-                    }
-
-                    if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
-                        cudaMemcpy (meta->out_buf_ptrs_host[i], meta->out_buf_ptrs_dev[i], 
-                        info->inferDims.numElements * 4, cudaMemcpyDeviceToHost);
-                    }
-                }
-
+                // else
+                // {
+                //     g_print("[INFO] Detected: %s\n", obj_meta->obj_label);
+                // }
             }
 
         }

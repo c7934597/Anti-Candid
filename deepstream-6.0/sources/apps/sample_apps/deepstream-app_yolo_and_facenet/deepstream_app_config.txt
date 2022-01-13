@@ -102,13 +102,5 @@ nvbuf-memory-type=0
 config-file=sgie0.txt
 
 
-[secondary-gie1]
-enable=1
-gpu-id=0
-gie-unique-id=3
-nvbuf-memory-type=0
-config-file=sgie1.txt
-
-
 [tests]
 file-loop=0
