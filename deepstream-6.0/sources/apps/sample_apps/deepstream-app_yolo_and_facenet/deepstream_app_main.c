@@ -83,6 +83,14 @@ GOptionEntry entries[] = {
   ,
 };
 
+gchar alivebuf[]="ONLINE";
+
+extern void
+readConfig();
+
+extern void 
+send_lock_socket(char buf[], bool detection);
+
 extern void
 object_meta_data1(NvDsBatchMeta *batch_meta);
 
@@ -112,6 +120,22 @@ sgie0_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
   NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
 
   object_meta_data2(batch_meta);
+  return GST_PAD_PROBE_OK;
+}
+
+extern void
+pose_meta_data(NvDsBatchMeta *batch_meta);
+
+/* sgie_src_pad_buffer_probe  will extract metadata received from sgie
+ * and update params for drawing rectangle, object information etc. */
+static GstPadProbeReturn
+sgie1_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u_data)
+{
+  //gchar *msg = NULL;
+  GstBuffer *buf = (GstBuffer *)info->data;
+  NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
+
+  pose_meta_data(batch_meta);
   return GST_PAD_PROBE_OK;
 }
 
@@ -215,6 +239,9 @@ perf_cb (gpointer context, NvDsAppPerfStruct * str)
   }
   g_print ("\n");
   g_mutex_unlock (&fps_lock);
+
+  if (fps[0] != 0.00)
+    send_lock_socket(alivebuf , false);
 }
 
 /**
@@ -673,6 +700,8 @@ main (int argc, char *argv[])
       goto done;
     }
 
+    readConfig();
+
     // face detection
     if (appCtx[i]->config.primary_gie_config.enable) {
         GstPad *src_pad1 = NULL;
@@ -700,6 +729,21 @@ main (int argc, char *argv[])
             gst_pad_add_probe(src_pad2, GST_PAD_PROBE_TYPE_BUFFER,
                       sgie0_src_pad_buffer_probe, NULL, NULL);
             gst_object_unref (src_pad2);
+        }
+    }
+
+    // pose estimation
+    if (appCtx[i]->config.secondary_gie_sub_bin_config[0].enable) {
+        GstPad *src_pad3 = NULL;
+        GstElement *src_element3 = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[0].secondary_gie;
+        src_pad3 = gst_element_get_static_pad (src_element3, "src");
+        if (!src_pad3)
+            g_print ("Unable to get secondary_gie1 src pad\n");
+        else
+        {
+            gst_pad_add_probe(src_pad3, GST_PAD_PROBE_TYPE_BUFFER,
+                      sgie1_src_pad_buffer_probe, NULL, NULL);
+            gst_object_unref (src_pad3);
         }
     }
 

@@ -41,7 +41,7 @@ ifeq ($(TARGET_DEVICE),aarch64)
 endif
 
 SRCS:= $(wildcard *.c)
-SRCS+= $(wildcard ../../apps-common/src/*.c)
+SRCS+= $(wildcard ../apps-common/src/*.c)
 
 INCS:= $(wildcard *.h)
 
