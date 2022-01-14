@@ -1,10 +1,16 @@
 #include "post_process.cpp"
 
+#include <glib.h>
+#include "json.hpp"
+#include <iostream>
+#include <fstream>
+#include <cstring>
 #include <vector>
 #include <array>
 #include <queue>
 #include <cmath>
 #include <string>
+#include "nvdsinfer_custom_impl.h"
 
 template <class T>
 using Vec1D = std::vector<T>;
@@ -31,6 +37,7 @@ gint PoseWarning = 0;
 gint PeopleWarning = 0;
 gint NobodyWarning = 0;
 gint SuspiciousItemWarning = 0;
+gint FaceRecognitionWarning = 0;
 gchar lockbuf[]="LOCK";
 
 /*config vars*/  
@@ -52,9 +59,12 @@ gint LeftArmMin = 45;
 gint LeftArmMax = 145;
 gint RightArmMin = 45;
 gint RightArmMax = 145;
+gint Accept_People_Count = 1;
+gint Face_Recognition_Threshold = 60;
 gint PeopleWarningLimit = 30;
 gint NobodyWarningLimit = 15;
 gint SuspiciousItemWarningLimit = 15;
+gint FaceRecognitionWarningLimit = 30;
 
 extern "C" void
 readConfig(){ 
@@ -113,6 +123,12 @@ readConfig(){
       else if(!strcmp(name, "RightArmMax")){
         RightArmMax = atoi(value);
       }
+      else if(!strcmp(name, "Accept_People_Count")){
+        Accept_People_Count = atoi(value);
+      }
+      else if(!strcmp(name, "Face_Recognition_Threshold")){
+        Face_Recognition_Threshold = atoi(value);
+      }
       else if(!strcmp(name, "PeopleWarningLimit")){
         PeopleWarningLimit = atoi(value);
       }
@@ -121,6 +137,9 @@ readConfig(){
       }
       else if(!strcmp(name, "SuspiciousItemWarningLimit")){
         SuspiciousItemWarningLimit = atoi(value);
+      }
+      else if(!strcmp(name, "FaceRecognitionWarningLimit")){
+        FaceRecognitionWarningLimit = atoi(value);
       }
     }
   }
@@ -232,6 +251,7 @@ send_lock_socket(char buf[], bool detection){
       PeopleWarning = 0;
       NobodyWarning = 0;
       SuspiciousItemWarning = 0;
+      FaceRecognitionWarning = 0;
       ShutdownCommand += 1;
       if(open_send_socket_count_limit == 1)
       {
@@ -346,7 +366,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
     PoseWarning=0;
   }
 
-  if(countPeople > 1)
+  if(countPeople > Accept_People_Count)
   {
     NobodyWarning=0;
     PeopleWarning++;
@@ -431,21 +451,6 @@ object_meta_data0(NvDsBatchMeta *batch_meta)
     return;
 }
 
-#include <glib.h>
-#include "json.hpp"
-#include <iostream>
-#include <fstream>
-#include <cstring>
-#include <vector>
-#include <array>
-#include <queue>
-#include <cmath>
-#include <string>
-// #include "gstnvdsmeta.h"
-// #include "gstnvdsinfer.h"
-#include "nvdsinfer_custom_impl.h"
-// #include "nvds_version.h"
-
 // Function that return
 // dot product of two vector array.
 float dotProduct(float vect_A[], float vect_B[])
@@ -509,57 +514,10 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
         embeddings_base.insert(embeddings_base.end(), std::stof(s));
     }
 
-
-
-
-    // for ( NvDsMetaList *l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
-    //   NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
-    //     for (NvDsMetaList *l_user = frame_meta->frame_user_meta_list; l_user != NULL; l_user = l_user->next) {
-    //         NvDsUserMeta *user_meta = (NvDsUserMeta *)l_user->data;
-    //         if (user_meta->base_meta.meta_type != NVDSINFER_TENSOR_OUTPUT_META){
-    //           continue;
-    //         }
-
-    //         /* convert to tensor metadata */
-    //         NvDsInferTensorMeta *meta = (NvDsInferTensorMeta *) user_meta->user_meta_data;
-    //         // g_print("Num output layers  : %d \n", meta->num_output_layers);
-    //         for (unsigned int i = 0; i < meta->num_output_layers; i++) {
-    //           NvDsInferLayerInfo *info = &meta->output_layers_info[i];
-
-    //           info->buffer = meta->out_buf_ptrs_host[i];
-    //           float (*array)[128] = (float (*)[128]) info->buffer;
-    //           std::vector<float> embeddings_detection;
-
-    //           g_print("Shape  : %d \n", info->inferDims.numElements);
-    //           // g_print("128d Tensor [ ");
-    //           for (unsigned int k = 0; k < info->inferDims.numElements; k++) {
-    //             // g_print("%f, ", (*array)[k]);
-    //             embeddings_detection.insert(embeddings_detection.end(), (*array)[k]);
-    //           }
-    //           // g_print("] \n");
-
-    //           float printdot = dotProduct(embeddings_detection.data(), embeddings_base.data());
-    //           g_print("Dot Product : %f \n", printdot);
-    //           if (printdot > 60) {
-    //             g_print("[INFO] Detected: %s\n", "Ming");
-    //           } else {
-    //             g_print("[INFO] Detected: %s\n", "not Ming");
-    //           }
-
-    //           if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
-    //             cudaMemcpy (meta->out_buf_ptrs_host[i], meta->out_buf_ptrs_dev[i], 
-    //             info->inferDims.numElements * 4, cudaMemcpyDeviceToHost);
-    //           }
-    //         }
-
-    //     }
-    // }
-
-
     /* Iterate each frame metadata in batch */
     for (NvDsMetaList *l_frame = batch_meta->frame_meta_list; l_frame != NULL; l_frame = l_frame->next) {
         NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
-
+        bool IsWarning = false;
         /* Iterate object metadata in frame */
         for (NvDsMetaList *l_obj = frame_meta->obj_meta_list; l_obj != NULL; l_obj = l_obj->next) {
             NvDsObjectMeta *obj_meta = (NvDsObjectMeta *) l_obj->data;
@@ -595,11 +553,12 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
                             // g_print("] \n");
 
                             float printdot = dotProduct(embeddings_detection.data(), embeddings_base.data());
-                            g_print("Dot Product : %f \n", printdot);
-                            if (printdot > 60) {
-                                g_print("[INFO] Detected: %s\n", "Ming");
+                            // g_print("Dot Product : %f \n", printdot);
+                            if (printdot > Face_Recognition_Threshold) {
+                                g_print("[INFO] Face Recognition Success \n");
                             } else {
-                                g_print("[INFO] Detected: %s\n", "not Ming");
+                                IsWarning = true;
+                                g_print("[INFO] Face Recognition Not Success \n");
                             }
 
                             if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
@@ -610,18 +569,26 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
 
                     }
                 }
-                // else
-                // {
-                //     g_print("[INFO] Detected: %s\n", obj_meta->obj_label);
-                // }
             }
+
+          if(IsWarning)
+          {
+            FaceRecognitionWarning++;
+            // printf("Face Recognition Warning : %d \n", FaceRecognitionWarning);
+          }
+          else
+          {
+            FaceRecognitionWarning = 0;
+          }
 
         }
 
     }
 
-
-
+    if(FaceRecognitionWarning == FaceRecognitionWarningLimit)
+    {
+      send_lock_socket(lockbuf , true);
+    }
 
     use_device_mem = 1 - use_device_mem;
     return;

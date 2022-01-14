@@ -6,8 +6,8 @@ perf-measurement-interval-sec=1
 enable=1
 rows=1
 columns=1
-width=224
-height=224
+width=416
+height=416
 gpu-id=0
 nvbuf-memory-type=0
 
@@ -25,8 +25,8 @@ uri=file:///opt/nvidia/deepstream/deepstream-6.0/samples/streams/sample_1080p_h2
 num-sources=1
 
 # Resolution
-camera-width=320
-camera-height=240
+camera-width=640
+camera-height=480
 
 # FPS
 camera-fps-n=30
@@ -79,8 +79,8 @@ batch-size=1
 # 30fps source: 1 / 30 * 1000 * 1000 = 33333 (microseconds)
 batched-push-timeout=33333
 
-width=224
-height=224
+width=416
+height=416
 enable-padding=0
 nvbuf-memory-type=0
 

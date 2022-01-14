@@ -2,8 +2,8 @@
 gpu-id=0
 net-scale-factor=0.0039215697906911373
 
-custom-network-config=model/facedetection/yolov4/yolov4-tiny-224.cfg
-model-file=model/facedetection/yolov4/yolov4-tiny-224.weights
+custom-network-config=model/facedetection/yolov4/yolov4-tiny-416.cfg
+model-file=model/facedetection/yolov4/yolov4-tiny-416.weights
 model-engine-file=model_b1_gpu0_fp16.engine
 labelfile-path=model/facedetection/yolov4/labels.txt
 num-detected-classes=4
@@ -37,4 +37,4 @@ engine-create-func-name=NvDsInferYoloCudaEngineGet
 # workspace-size=8000
 
 [class-attrs-all]
-pre-cluster-threshold=0.25
+pre-cluster-threshold=0.1
