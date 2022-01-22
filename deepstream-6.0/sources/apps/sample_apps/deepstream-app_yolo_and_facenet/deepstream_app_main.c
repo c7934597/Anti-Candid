@@ -733,9 +733,9 @@ main (int argc, char *argv[])
     }
 
     // pose estimation
-    if (appCtx[i]->config.secondary_gie_sub_bin_config[1].enable) {
+    if (appCtx[i]->config.secondary_gie_sub_bin_config[0].enable) {
         GstPad *src_pad3 = NULL;
-        GstElement *src_element3 = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[1].secondary_gie;
+        GstElement *src_element3 = appCtx[i]->pipeline.common_elements.secondary_gie_bin.sub_bins[0].secondary_gie;
         src_pad3 = gst_element_get_static_pad (src_element3, "src");
         if (!src_pad3)
             g_print ("Unable to get secondary_gie1 src pad\n");

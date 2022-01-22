@@ -103,11 +103,11 @@ config-file=sgie0.txt
 
 
 [secondary-gie1]
-enable=0
+enable=1
 gpu-id=0
 gie-unique-id=3
 operate-on-gie-id=1
-operate-on-class-ids=0
+operate-on-class-ids=0;
 nvbuf-memory-type=0
 config-file=deepstream_pose_estimation_config.txt
 

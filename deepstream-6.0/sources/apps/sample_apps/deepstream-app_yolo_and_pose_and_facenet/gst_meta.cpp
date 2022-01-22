@@ -181,8 +181,8 @@ parse_objects_from_tensor_meta(NvDsInferTensorMeta *tensor_meta)
 }
 
 float convert_radian_to_degrees(float radian){ 
-    float pi = 3.14159; 
-    return (radian * (180/pi)); 
+    float pi = 3.14159;
+    return (radian * (180/pi));
 }
 
 float get_angle(float a0, float a1, float b0, float b1)
