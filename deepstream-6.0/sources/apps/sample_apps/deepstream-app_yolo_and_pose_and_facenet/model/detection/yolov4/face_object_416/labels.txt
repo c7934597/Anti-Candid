@@ -1,4 +1,0 @@
-face
-mouse
-keyboard
-SuspiciousItem

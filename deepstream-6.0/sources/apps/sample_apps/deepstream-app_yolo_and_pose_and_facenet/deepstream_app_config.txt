@@ -3,7 +3,7 @@ enable-perf-measurement=1
 perf-measurement-interval-sec=1
 
 [tiled-display]
-enable=1
+enable=0
 rows=1
 columns=1
 width=416
@@ -42,7 +42,7 @@ cudadec-memtype=0
 
 
 [sink0]
-enable=1
+enable=0
 #Type - 1=FakeSink 2=EglSink 3=File
 type=2
 sync=0
@@ -52,7 +52,7 @@ nvbuf-memory-type=0
 
 
 [osd]
-enable=1
+enable=0
 gpu-id=0
 border-width=1
 text-size=15
