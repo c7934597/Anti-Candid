@@ -62,6 +62,8 @@ gint Right_Arm_Max = 145;
 gint Accept_People_Count = 1;
 gint Open_Face_Recognition_Lock = 1;
 gint Face_Recognition_Threshold = 60;
+gint Display_Face_Recognition_Score = 1;
+gint Display_Face_Recognition_Embedding = 1;
 gint People_Warning_Limit = 30;
 gint Nobody_Warning_Limit = 15;
 gint Suspicious_Item_Warning_Limit = 15;
@@ -132,6 +134,12 @@ readConfig(){
       }
       else if(!strcmp(name, "Face_Recognition_Threshold")){
         Face_Recognition_Threshold = atoi(value);
+      }
+      else if(!strcmp(name, "Display_Face_Recognition_Score")){
+        Display_Face_Recognition_Score = atoi(value);
+      }
+      else if(!strcmp(name, "Display_Face_Recognition_Embedding")){
+        Display_Face_Recognition_Embedding = atoi(value);
       }
       else if(!strcmp(name, "People_Warning_Limit")){
         People_Warning_Limit = atoi(value);
@@ -495,7 +503,7 @@ const std::vector<std::string> split(const std::string& str, const std::string& 
 extern "C" void
 object_meta_data1(NvDsBatchMeta *batch_meta)
 {
-    static guint use_device_mem = 0;
+    // static guint use_device_mem = 0;
 
     // Config
     // g_print("[INFO] Loading config...\n");
@@ -547,17 +555,28 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
                             info->buffer = meta->out_buf_ptrs_host[i];
                             float (*array)[128] = (float (*)[128]) info->buffer;
                             std::vector<float> embeddings_detection;
-
-                            // g_print("Shape  : %d \n", info->inferDims.numElements);
-                            // g_print("128d Tensor [ ");
-                            for (unsigned int k = 0; k < info->inferDims.numElements; k++) {
-                                // g_print("%f, ", (*array)[k]);
-                                embeddings_detection.insert(embeddings_detection.end(), (*array)[k]);
+                            
+                            if(Display_Face_Recognition_Embedding)
+                            {
+                              g_print("Shape  : %d \n", info->inferDims.numElements);
+                              g_print("128d Tensor [ ");
+                              for (unsigned int k = 0; k < info->inferDims.numElements; k++) {
+                                  g_print("%f, ", (*array)[k]);
+                                  embeddings_detection.insert(embeddings_detection.end(), (*array)[k]);
+                              }
+                              g_print("] \n");
                             }
-                            // g_print("] \n");
+                            else{
+                              for (unsigned int k = 0; k < info->inferDims.numElements; k++) {
+                                  embeddings_detection.insert(embeddings_detection.end(), (*array)[k]);
+                              }
+                            }
 
                             float printdot = dotProduct(embeddings_detection.data(), embeddings_base.data());
-                            // g_print("Dot Product : %f \n", printdot);
+                            if(Display_Face_Recognition_Score)
+                            {
+                              g_print("Dot Product : %f \n", printdot);
+                            }
                             if (Open_Face_Recognition_Lock)
                             {
                               if (printdot > Face_Recognition_Threshold) {
@@ -568,10 +587,10 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
                               }
                             }
 
-                            if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
-                                cudaMemcpy (meta->out_buf_ptrs_host[i], meta->out_buf_ptrs_dev[i], 
-                                info->inferDims.numElements * 4, cudaMemcpyDeviceToHost);
-                            }
+                            // if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
+                            //     cudaMemcpy (meta->out_buf_ptrs_host[i], meta->out_buf_ptrs_dev[i], 
+                            //     info->inferDims.numElements * 4, cudaMemcpyDeviceToHost);
+                            // }
                         }
 
                     }
@@ -597,6 +616,6 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
       send_lock_socket(lockbuf , true);
     }
 
-    use_device_mem = 1 - use_device_mem;
+    // use_device_mem = 1 - use_device_mem;
     return;
 }
