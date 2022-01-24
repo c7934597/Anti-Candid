@@ -41,37 +41,38 @@ gint FaceRecognitionWarning = 0;
 gchar lockbuf[]="LOCK";
 
 /*config vars*/  
-gint port_lock = 0;
-gint portnumber = 0;
-gchar ipaddress[SIZE];
-gint open_send_socket_count_limit = 0;
-gint send_socket_count_limit = 0;
-gint open_hand_lock = 0;
+gint Port_Lock = 0;
+gint Port_Number = 0;
+gchar IP_Address[SIZE];
+gint Open_Send_Socket_Count_Limit = 0;
+gint Send_Socket_Count_Limit = 0;
+gint Open_Hand_Lock = 0;
 
 /* The muxer output resolution must be set if the input streams will be of
  * different resolution. The muxer will scale all the input frames to this
  * resolution. */
-gint pose_estimation_muxer_output_width = 0;
-gint pose_estimation_muxer_output_height = 0;
+gint Pose_Estimation_Muxer_Output_Width = 0;
+gint Pose_Estimation_Muxer_Output_Height = 0;
 
-gint PoseWarningLimit = 15;
-gint LeftArmMin = 45;
-gint LeftArmMax = 145;
-gint RightArmMin = 45;
-gint RightArmMax = 145;
+gint Pose_Warning_Limit = 15;
+gint Left_Arm_Min = 45;
+gint Left_Arm_Max = 145;
+gint Right_Arm_Min = 45;
+gint Right_Arm_Max = 145;
 gint Accept_People_Count = 1;
+gint Open_Face_Recognition_Lock = 1;
 gint Face_Recognition_Threshold = 60;
-gint PeopleWarningLimit = 30;
-gint NobodyWarningLimit = 15;
-gint SuspiciousItemWarningLimit = 15;
-gint FaceRecognitionWarningLimit = 30;
+gint People_Warning_Limit = 30;
+gint Nobody_Warning_Limit = 15;
+gint Suspicious_Item_Warning_Limit = 15;
+gint Face_Recognition_Warning_Limit = 30;
 
 extern "C" void
 readConfig(){ 
   char name[SIZE];
   char value[SIZE];
 
-  memset(ipaddress,0,SIZE);
+  memset(IP_Address,0,SIZE);
   
   FILE *fp = fopen(CONFIG_PATH, "r");
   if (fp == NULL){
@@ -84,62 +85,65 @@ readConfig(){
       /*Read Data*/
       fscanf(fp,"%s = %s\n", name, value);
       
-      if(!strcmp(name, "port_lock")){
-        port_lock = atoi(value);
+      if(!strcmp(name, "Port_Lock")){
+        Port_Lock = atoi(value);
       }
-      else if (!strcmp(name, "portnumber")){
-        portnumber = atoi(value);
+      else if (!strcmp(name, "Port_Number")){
+        Port_Number = atoi(value);
       }
-      else if(!strcmp(name, "ipaddress")){
-        strcpy(ipaddress, value);
+      else if(!strcmp(name, "IP_Address")){
+        strcpy(IP_Address, value);
       }
-      else if(!strcmp(name, "pose_estimation_muxer_output_width")){
-        pose_estimation_muxer_output_width = atoi(value);
+      else if(!strcmp(name, "Pose_Estimation_Muxer_Output_Width")){
+        Pose_Estimation_Muxer_Output_Width = atoi(value);
       }
-      else if(!strcmp(name, "pose_estimation_muxer_output_height")){
-        pose_estimation_muxer_output_height = atoi(value);
+      else if(!strcmp(name, "Pose_Estimation_Muxer_Output_Height")){
+        Pose_Estimation_Muxer_Output_Height = atoi(value);
       }
-      else if(!strcmp(name, "open_send_socket_count_limit")){
-        open_send_socket_count_limit = atoi(value);
+      else if(!strcmp(name, "Open_Send_Socket_Count_Limit")){
+        Open_Send_Socket_Count_Limit = atoi(value);
       }
-      else if(!strcmp(name, "send_socket_count_limit")){
-        send_socket_count_limit = atoi(value);
+      else if(!strcmp(name, "Send_Socket_Count_Limit")){
+        Send_Socket_Count_Limit = atoi(value);
       }
-      else if(!strcmp(name, "open_hand_lock")){
-        open_hand_lock = atoi(value);
+      else if(!strcmp(name, "Open_Hand_Lock")){
+        Open_Hand_Lock = atoi(value);
       }
-      else if(!strcmp(name, "PoseWarningLimit")){
-        PoseWarningLimit = atoi(value);
+      else if(!strcmp(name, "Pose_Warning_Limit")){
+        Pose_Warning_Limit = atoi(value);
       }
-      else if(!strcmp(name, "LeftArmMin")){
-        LeftArmMin = atoi(value);
+      else if(!strcmp(name, "Left_Arm_Min")){
+        Left_Arm_Min = atoi(value);
       }
-      else if(!strcmp(name, "LeftArmMax")){
-        LeftArmMax = atoi(value);
+      else if(!strcmp(name, "Left_Arm_Max")){
+        Left_Arm_Max = atoi(value);
       }
-      else if(!strcmp(name, "RightArmMin")){
-        RightArmMin = atoi(value);
+      else if(!strcmp(name, "Right_Arm_Min")){
+        Right_Arm_Min = atoi(value);
       }
-      else if(!strcmp(name, "RightArmMax")){
-        RightArmMax = atoi(value);
+      else if(!strcmp(name, "Right_Arm_Max")){
+        Right_Arm_Max = atoi(value);
       }
       else if(!strcmp(name, "Accept_People_Count")){
         Accept_People_Count = atoi(value);
       }
+      else if(!strcmp(name, "Open_Face_Recognition_Lock")){
+        Open_Face_Recognition_Lock = atoi(value);
+      }
       else if(!strcmp(name, "Face_Recognition_Threshold")){
         Face_Recognition_Threshold = atoi(value);
       }
-      else if(!strcmp(name, "PeopleWarningLimit")){
-        PeopleWarningLimit = atoi(value);
+      else if(!strcmp(name, "People_Warning_Limit")){
+        People_Warning_Limit = atoi(value);
       }
-      else if(!strcmp(name, "NobodyWarningLimit")){
-        NobodyWarningLimit = atoi(value);
+      else if(!strcmp(name, "Nobody_Warning_Limit")){
+        Nobody_Warning_Limit = atoi(value);
       }
-      else if(!strcmp(name, "SuspiciousItemWarningLimit")){
-        SuspiciousItemWarningLimit = atoi(value);
+      else if(!strcmp(name, "Suspicious_Item_Warning_Limit")){
+        Suspicious_Item_Warning_Limit = atoi(value);
       }
-      else if(!strcmp(name, "FaceRecognitionWarningLimit")){
-        FaceRecognitionWarningLimit = atoi(value);
+      else if(!strcmp(name, "Face_Recognition_Warning_Limit")){
+        Face_Recognition_Warning_Limit = atoi(value);
       }
     }
   }
@@ -228,13 +232,13 @@ send_lock_socket(char buf[], bool detection){
   }
 
   client_addr.sin_family = AF_INET; /*IPv4*/
-  client_addr.sin_port = htons(portnumber);  /*Set port number*/
-  if (port_lock == 1)
+  client_addr.sin_port = htons(Port_Number);  /*Set port number*/
+  if (Port_Lock == 1)
   {
     client_addr.sin_addr.s_addr = htonl(INADDR_BROADCAST); /*Set the broadcast address*/
   }
   else{
-    client_addr.sin_addr.s_addr = inet_addr(ipaddress); /*Set the broadcast address*/
+    client_addr.sin_addr.s_addr = inet_addr(IP_Address); /*Set the broadcast address*/
   }
   int clientlen = sizeof(client_addr);
 
@@ -253,9 +257,9 @@ send_lock_socket(char buf[], bool detection){
       SuspiciousItemWarning = 0;
       FaceRecognitionWarning = 0;
       ShutdownCommand += 1;
-      if(open_send_socket_count_limit == 1)
+      if(Open_Send_Socket_Count_Limit == 1)
       {
-        if(ShutdownCommand == send_socket_count_limit)
+        if(ShutdownCommand == Send_Socket_Count_Limit)
         {
           // system("killall deepstream-app");
           system("shutdown -h now");
@@ -288,8 +292,8 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
       if (k >= 0)
       {
         auto &peak = normalized_peaks[j][k];
-        int x = peak[1] * pose_estimation_muxer_output_width;
-        int y = peak[0] * pose_estimation_muxer_output_height;
+        int x = peak[1] * Pose_Estimation_Muxer_Output_Width;
+        int y = peak[0] * Pose_Estimation_Muxer_Output_Height;
         if (dmeta->num_circles == MAX_ELEMENTS_IN_DISPLAY_META)
         {
           dmeta = nvds_acquire_display_meta_from_pool(bmeta);
@@ -317,20 +321,20 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         {
           float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
           // printf("left arm angle %f\n", angle);
-          if (LeftArmMin < angle and angle < LeftArmMax)
+          if (Left_Arm_Min < angle and angle < Left_Arm_Max)
             IsWarning = true;
         }
         if (k ==8)
         {
           float angle = get_angle(peak0[1], peak0[0], peak1[1], peak1[0]);
           // printf("right arm angle %f\n", angle);
-          if (RightArmMin < angle and angle < RightArmMax)
+          if (Right_Arm_Min < angle and angle < Right_Arm_Max)
             IsWarning = true;
         }
-        int x0 = peak0[1] * pose_estimation_muxer_output_width;
-        int y0 = peak0[0] * pose_estimation_muxer_output_height;
-        int x1 = peak1[1] * pose_estimation_muxer_output_width;
-        int y1 = peak1[0] * pose_estimation_muxer_output_height;
+        int x0 = peak0[1] * Pose_Estimation_Muxer_Output_Width;
+        int y0 = peak0[0] * Pose_Estimation_Muxer_Output_Height;
+        int x1 = peak1[1] * Pose_Estimation_Muxer_Output_Width;
+        int y1 = peak1[0] * Pose_Estimation_Muxer_Output_Height;
         if (dmeta->num_lines == MAX_ELEMENTS_IN_DISPLAY_META)
         {
           dmeta = nvds_acquire_display_meta_from_pool(bmeta);
@@ -346,7 +350,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
         lparams.line_color = NvOSD_ColorParams{0, 255, 0, 1};
         dmeta->num_lines++;
       }
-      else if(open_hand_lock == 1)
+      else if(Open_Hand_Lock == 1)
       {
         if((k == 7 || k == 8) && (object[c_a] < 0 && object[c_b] < 0))
         {
@@ -384,7 +388,7 @@ create_display_meta(Vec2D<int> &objects, Vec3D<float> &normalized_peaks, NvDsFra
     NobodyWarning=0;
   }
 
-  if(PoseWarning == PoseWarningLimit || PeopleWarning == PeopleWarningLimit || NobodyWarning == NobodyWarningLimit)
+  if(PoseWarning == Pose_Warning_Limit || PeopleWarning == People_Warning_Limit || NobodyWarning == Nobody_Warning_Limit)
   {
     send_lock_socket(lockbuf , true);
   }
@@ -444,7 +448,7 @@ object_meta_data0(NvDsBatchMeta *batch_meta)
         }
     }
 
-    if(SuspiciousItemWarning == SuspiciousItemWarningLimit)
+    if(SuspiciousItemWarning == Suspicious_Item_Warning_Limit)
     {
       send_lock_socket(lockbuf , true);
     }
@@ -554,11 +558,14 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
 
                             float printdot = dotProduct(embeddings_detection.data(), embeddings_base.data());
                             // g_print("Dot Product : %f \n", printdot);
-                            if (printdot > Face_Recognition_Threshold) {
-                                g_print("[INFO] Face Recognition Success \n");
-                            } else {
-                                IsWarning = true;
-                                g_print("[INFO] Face Recognition Not Success \n");
+                            if (Open_Face_Recognition_Lock)
+                            {
+                              if (printdot > Face_Recognition_Threshold) {
+                                  g_print("[INFO] Face Recognition Success \n");
+                              } else {
+                                  IsWarning = true;
+                                  g_print("[INFO] Face Recognition Not Success \n");
+                              }
                             }
 
                             if (use_device_mem && meta->out_buf_ptrs_dev[i]) {
@@ -585,7 +592,7 @@ object_meta_data1(NvDsBatchMeta *batch_meta)
 
     }
 
-    if(FaceRecognitionWarning == FaceRecognitionWarningLimit)
+    if(FaceRecognitionWarning == Face_Recognition_Warning_Limit)
     {
       send_lock_socket(lockbuf , true);
     }
