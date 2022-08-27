@@ -1,5 +1,5 @@
-# Anti-Candid_Pose
-Anti-Candid_Pose
+# Pose_And_Object_Classification
+Pose_And_Object_Classification
 
 ## 1. Getting Started
 (可選)
